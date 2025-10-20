@@ -1,0 +1,4 @@
+package io.github.isaac.reservas.services;
+
+public class ServiceHorario {
+}
