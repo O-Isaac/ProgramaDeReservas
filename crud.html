@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Reservas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/micromodal/0.4.10/micromodal.min.js"></script>
+    <style>
+        body { font-family: 'Roboto', sans-serif; }
+        .modal { display: none; }
+        .modal.is-open { display: flex; }
+        .tab-active { border-bottom: 3px solid #1976d2; color: #1976d2; }
+        .card { box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.1); }
+        .btn-elevation { box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: all 0.3s; }
+        .btn-elevation:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.3); transform: translateY(-1px); }
+        .ripple { position: relative; overflow: hidden; }
+        .ripple:after { content: ""; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: rgba(255,255,255,0.5); opacity: 0; border-radius: 100%; transform: scale(1, 1) translate(-50%); transform-origin: 50% 50%; }
+        @keyframes ripple { 0% { transform: scale(0, 0); opacity: 1; } 20% { transform: scale(25, 25); opacity: 1; } 100% { opacity: 0; transform: scale(40, 40); } }
+        .ripple:focus:not(:active)::after { animation: ripple 1s ease-out; }
+
+        /* Toast Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            min-width: 300px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            background: white;
+        }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.warning { border-left: 4px solid #f59e0b; }
+        .toast.info { border-left: 4px solid #3b82f6; }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        .toast.closing { animation: slideOut 0.3s ease-out; }
+    </style>
+</head>
+<body class="bg-gray-50">
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Header -->
+<header class="bg-blue-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+        <h1 class="text-2xl font-bold flex items-center">
+            <i class="fas fa-calendar-check mr-3"></i>
+            Sistema de Gestión de Reservas
+        </h1>
+    </div>
+</header>
+
+<!-- Tabs -->
+<div class="bg-white shadow-md">
+    <div class="container mx-auto px-4">
+        <nav class="flex space-x-8">
+            <button onclick="switchTab('aulas')" id="tab-aulas" class="tab-active py-4 px-2 font-medium text-gray-700 hover:text-blue-700 transition">
+                <i class="fas fa-door-open mr-2"></i>Aulas
+            </button>
+            <button onclick="switchTab('reservas')" id="tab-reservas" class="py-4 px-2 font-medium text-gray-700 hover:text-blue-700 transition">
+                <i class="fas fa-bookmark mr-2"></i>Reservas
+            </button>
+            <button onclick="switchTab('horarios')" id="tab-horarios" class="py-4 px-2 font-medium text-gray-700 hover:text-blue-700 transition">
+                <i class="fas fa-clock mr-2"></i>Horarios
+            </button>
+        </nav>
+    </div>
+</div>
+
+<!-- Content -->
+<main class="container mx-auto px-4 py-8">
+    <!-- Aulas Tab -->
+    <div id="content-aulas" class="tab-content">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-800">Gestión de Aulas</h2>
+            <button onclick="openAulaModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg btn-elevation ripple">
+                <i class="fas fa-plus mr-2"></i>Nueva Aula
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="aulas-list"></div>
+    </div>
+
+    <!-- Reservas Tab -->
+    <div id="content-reservas" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-800">Gestión de Reservas</h2>
+            <button onclick="openReservaModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg btn-elevation ripple">
+                <i class="fas fa-plus mr-2"></i>Nueva Reserva
+            </button>
+        </div>
+        <div class="bg-white rounded-lg card p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full" id="reservas-table">
+                    <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ID</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Fecha</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Motivo</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Aula</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Asistentes</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody id="reservas-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Horarios Tab -->
+    <div id="content-horarios" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-800">Gestión de Horarios</h2>
+            <button onclick="openHorarioModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg btn-elevation ripple">
+                <i class="fas fa-plus mr-2"></i>Nuevo Horario
+            </button>
+        </div>
+        <div class="bg-white rounded-lg card p-6">
+            <div class="overflow-x-auto">
+                <table class="w-full" id="horarios-table">
+                    <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ID</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Día</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Inicio</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Fin</th>
+                        <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody id="horarios-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Aula -->
+<div class="modal fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50" id="modal-aula">
+    <div class="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 transform transition-all">
+        <div class="bg-blue-700 text-white px-6 py-4 rounded-t-lg flex justify-between items-center">
+            <h3 class="text-xl font-bold" id="modal-aula-title">Nueva Aula</h3>
+            <button onclick="closeAulaModal()" class="text-white hover:text-gray-200">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form id="form-aula" class="p-6">
+            <input type="hidden" id="aula-id">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">Nombre</label>
+                <input type="text" id="aula-nombre" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">Capacidad</label>
+                <input type="number" id="aula-capacidad" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-6">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="aula-ordenadores" class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <span class="ml-3 text-gray-700 text-sm font-medium">Tiene ordenadores</span>
+                </label>
+            </div>
+            <div class="flex space-x-3">
+                <button type="button" onclick="closeAulaModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 rounded-lg font-medium transition">
+                    Cancelar
+                </button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium btn-elevation">
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Reserva -->
+<div class="modal fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50" id="modal-reserva">
+    <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 transform transition-all max-h-screen overflow-y-auto">
+        <div class="bg-blue-700 text-white px-6 py-4 rounded-t-lg flex justify-between items-center sticky top-0">
+            <h3 class="text-xl font-bold" id="modal-reserva-title">Nueva Reserva</h3>
+            <button onclick="closeReservaModal()" class="text-white hover:text-gray-200">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form id="form-reserva" class="p-6">
+            <input type="hidden" id="reserva-id">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Fecha</label>
+                    <input type="date" id="reserva-fecha" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Asistentes</label>
+                    <input type="number" id="reserva-asistentes" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">Motivo</label>
+                <textarea id="reserva-motivo" required rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">Aula</label>
+                <select id="reserva-aula" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Seleccione un aula</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">Horario</label>
+                <select id="reserva-horario" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Seleccione un horario</option>
+                </select>
+            </div>
+            <div class="flex space-x-3">
+                <button type="button" onclick="closeReservaModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 rounded-lg font-medium transition">
+                    Cancelar
+                </button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium btn-elevation">
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Horario -->
+<div class="modal fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50" id="modal-horario">
+    <div class="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 transform transition-all">
+        <div class="bg-blue-700 text-white px-6 py-4 rounded-t-lg flex justify-between items-center">
+            <h3 class="text-xl font-bold" id="modal-horario-title">Nuevo Horario</h3>
+            <button onclick="closeHorarioModal()" class="text-white hover:text-gray-200">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <form id="form-horario" class="p-6">
+            <input type="hidden" id="horario-id">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-medium mb-2">Día de la semana</label>
+                <select id="horario-dia" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Seleccione un día</option>
+                    <option value="LUNES">Lunes</option>
+                    <option value="MARTES">Martes</option>
+                    <option value="MIERCOLES">Miércoles</option>
+                    <option value="JUEVES">Jueves</option>
+                    <option value="VIERNES">Viernes</option>
+                    <option value="SABADO">Sábado</option>
+                    <option value="DOMINGO">Domingo</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Hora Inicio</label>
+                    <input type="time" id="horario-inicio" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Hora Fin</label>
+                    <input type="time" id="horario-fin" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+            <div class="flex space-x-3">
+                <button type="button" onclick="closeHorarioModal()" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 rounded-lg font-medium transition">
+                    Cancelar
+                </button>
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium btn-elevation">
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8080';
+    let aulas = [];
+    let reservas = [];
+    let horarios = [];
+
+    // Toast Notification System
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+
+        const colors = {
+            success: 'text-green-500',
+            error: 'text-red-500',
+            warning: 'text-yellow-500',
+            info: 'text-blue-500'
+        };
+
+        toast.innerHTML = `
+                <i class="fas ${icons[type]} ${colors[type]} text-xl"></i>
+                <span class="flex-1 text-gray-800">${message}</span>
+                <button onclick="closeToast(this)" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            closeToast(toast.querySelector('button'));
+        }, 4000);
+    }
+
+    function closeToast(button) {
+        const toast = button.closest('.toast');
+        toast.classList.add('closing');
+        setTimeout(() => toast.remove(), 300);
+    }
+
+    // Tab Management
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('nav button').forEach(el => el.classList.remove('tab-active'));
+        document.getElementById(`content-${tab}`).classList.remove('hidden');
+        document.getElementById(`tab-${tab}`).classList.add('tab-active');
+    }
+
+    // Date conversion functions
+    function formatDateToServer(dateString) {
+        // Convierte de yyyy-MM-dd a dd-MM-yyyy
+        if (!dateString) return '';
+        const [year, month, day] = dateString.split('-');
+        return `${day}-${month}-${year}`;
+    }
+
+    function formatDateFromServer(dateString) {
+        // Convierte de dd-MM-yyyy a yyyy-MM-dd
+        if (!dateString) return '';
+        const [day, month, year] = dateString.split('-');
+        return `${year}-${month}-${day}`;
+    }
+
+    // AULAS CRUD
+    async function loadAulas() {
+        try {
+            const response = await fetch(`${API_URL}/aulas`);
+            aulas = await response.json();
+            renderAulas();
+        } catch (error) {
+            console.error('Error loading aulas:', error);
+            showToast('Error al cargar las aulas', 'error');
+        }
+    }
+
+    function renderAulas() {
+        const list = document.getElementById('aulas-list');
+        list.innerHTML = aulas.map(aula => `
+                <div class="bg-white rounded-lg card p-6 hover:shadow-xl transition">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">${aula.nombre}</h3>
+                            <p class="text-gray-600 mt-1">
+                                <i class="fas fa-users mr-2"></i>Capacidad: ${aula.capacidad}
+                            </p>
+                        </div>
+                        ${aula.esOrdenadores ? '<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"><i class="fas fa-laptop mr-1"></i>PC</span>' : ''}
+                    </div>
+                    <div class="flex space-x-2 mt-4">
+                        <button onclick="editAula(${aula.id})" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 rounded-lg transition">
+                            <i class="fas fa-edit mr-1"></i>Editar
+                        </button>
+                        <button onclick="deleteAula(${aula.id})" class="flex-1 bg-red-50 hover:bg-red-100 text-red-700 py-2 rounded-lg transition">
+                            <i class="fas fa-trash mr-1"></i>Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    function openAulaModal(aula = null) {
+        document.getElementById('modal-aula').classList.add('is-open');
+        if (aula) {
+            document.getElementById('modal-aula-title').textContent = 'Editar Aula';
+            document.getElementById('aula-id').value = aula.id;
+            document.getElementById('aula-nombre').value = aula.nombre;
+            document.getElementById('aula-capacidad').value = aula.capacidad;
+            document.getElementById('aula-ordenadores').checked = aula.esOrdenadores;
+        } else {
+            document.getElementById('modal-aula-title').textContent = 'Nueva Aula';
+            document.getElementById('form-aula').reset();
+            document.getElementById('aula-id').value = '';
+        }
+    }
+
+    function closeAulaModal() {
+        document.getElementById('modal-aula').classList.remove('is-open');
+    }
+
+    async function editAula(id) {
+        const aula = aulas.find(a => a.id === id);
+        if (aula) openAulaModal(aula);
+    }
+
+    async function deleteAula(id) {
+        if (!confirm('¿Está seguro de eliminar esta aula?')) return;
+        try {
+            await fetch(`${API_URL}/aulas/${id}`, { method: 'DELETE' });
+            showToast('Aula eliminada correctamente', 'success');
+            loadAulas();
+        } catch (error) {
+            console.error('Error deleting aula:', error);
+            showToast('Error al eliminar el aula', 'error');
+        }
+    }
+
+    document.getElementById('form-aula').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('aula-id').value;
+        const data = {
+            nombre: document.getElementById('aula-nombre').value,
+            capacidad: parseInt(document.getElementById('aula-capacidad').value),
+            esOrdenadores: document.getElementById('aula-ordenadores').checked
+        };
+
+        try {
+            if (id) {
+                await fetch(`${API_URL}/aulas/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                showToast('Aula actualizada correctamente', 'success');
+            } else {
+                await fetch(`${API_URL}/aulas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                showToast('Aula creada correctamente', 'success');
+            }
+            closeAulaModal();
+            loadAulas();
+        } catch (error) {
+            console.error('Error saving aula:', error);
+            showToast('Error al guardar el aula', 'error');
+        }
+    });
+
+    // RESERVAS CRUD
+    async function loadReservas() {
+        try {
+            const response = await fetch(`${API_URL}/reservas`);
+            reservas = await response.json();
+            renderReservas();
+        } catch (error) {
+            console.error('Error loading reservas:', error);
+            showToast('Error al cargar las reservas', 'error');
+        }
+    }
+
+    function renderReservas() {
+        const tbody = document.getElementById('reservas-body');
+        tbody.innerHTML = reservas.map(reserva => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm">${reserva.id}</td>
+                    <td class="px-4 py-3 text-sm">${reserva.fecha}</td>
+                    <td class="px-4 py-3 text-sm">${reserva.motivo}</td>
+                    <td class="px-4 py-3 text-sm">${reserva.aula ? reserva.aula.nombre : 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm">${reserva.asistentes}</td>
+                    <td class="px-4 py-3 text-sm">
+                        <button onclick="editReserva(${reserva.id})" class="text-blue-600 hover:text-blue-800 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteReserva(${reserva.id})" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    async function openReservaModal(reserva = null) {
+        await loadAulas();
+        await loadHorarios();
+
+        const selectAula = document.getElementById('reserva-aula');
+        selectAula.innerHTML = '<option value="">Seleccione un aula</option>' +
+            aulas.map(a => `<option value="${a.id}">${a.nombre} (Cap: ${a.capacidad})</option>`).join('');
+
+        const selectHorario = document.getElementById('reserva-horario');
+        selectHorario.innerHTML = '<option value="">Seleccione un horario</option>' +
+            horarios.map(h => `<option value="${h.id}">${h.diaSemana} - ${h.inicio} a ${h.fin}</option>`).join('');
+
+        document.getElementById('modal-reserva').classList.add('is-open');
+
+        if (reserva) {
+            document.getElementById('modal-reserva-title').textContent = 'Editar Reserva';
+            document.getElementById('reserva-id').value = reserva.id;
+            // Convertir fecha del servidor (dd-MM-yyyy) al formato del input (yyyy-MM-dd)
+            document.getElementById('reserva-fecha').value = formatDateFromServer(reserva.fecha);
+            document.getElementById('reserva-motivo').value = reserva.motivo;
+            document.getElementById('reserva-asistentes').value = reserva.asistentes;
+            if (reserva.aula) document.getElementById('reserva-aula').value = reserva.aula.id;
+            if (reserva.horario) document.getElementById('reserva-horario').value = reserva.horario.id;
+        } else {
+            document.getElementById('modal-reserva-title').textContent = 'Nueva Reserva';
+            document.getElementById('form-reserva').reset();
+            document.getElementById('reserva-id').value = '';
+        }
+    }
+
+    function closeReservaModal() {
+        document.getElementById('modal-reserva').classList.remove('is-open');
+    }
+
+    async function editReserva(id) {
+        const reserva = reservas.find(r => r.id === id);
+        if (reserva) await openReservaModal(reserva);
+    }
+
+    async function deleteReserva(id) {
+        if (!confirm('¿Está seguro de eliminar esta reserva?')) return;
+        try {
+            await fetch(`${API_URL}/reservas/${id}`, { method: 'DELETE' });
+            showToast('Reserva eliminada correctamente', 'success');
+            loadReservas();
+        } catch (error) {
+            console.error('Error deleting reserva:', error);
+            showToast('Error al eliminar la reserva', 'error');
+        }
+    }
+
+    document.getElementById('form-reserva').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('reserva-id').value;
+        const aulaId = document.getElementById('reserva-aula').value;
+        const horarioId = document.getElementById('reserva-horario').value;
+        const fechaInput = document.getElementById('reserva-fecha').value;
+
+        const data = {
+            fecha: formatDateToServer(fechaInput), // Convertir fecha a formato dd-MM-yyyy
+            motivo: document.getElementById('reserva-motivo').value,
+            asistentes: parseInt(document.getElementById('reserva-asistentes').value),
+            aula: { id: parseInt(aulaId) },
+            horario: { id: parseInt(horarioId) }
+        };
+
+        try {
+            let response;
+            if (id) {
+                response = await fetch(`${API_URL}/reservas/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } else {
+                response = await fetch(`${API_URL}/reservas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+
+            // Verificar si la respuesta fue exitosa
+            if (!response.ok) {
+                // Intentar obtener el mensaje de error del servidor
+                const errorText = await response.text();
+                throw new Error(errorText || `Error ${response.status}: ${response.statusText}`);
+            }
+
+            showToast(id ? 'Reserva actualizada correctamente' : 'Reserva creada correctamente', 'success');
+            closeReservaModal();
+            loadReservas();
+        } catch (error) {
+            console.error('Error saving reserva:', error);
+            // Mostrar el mensaje de error específico del servidor o un mensaje genérico
+            showToast(error.message || 'Error al guardar la reserva', 'error');
+        }
+    });
+
+    // HORARIOS CRUD
+    async function loadHorarios() {
+        try {
+            const response = await fetch(`${API_URL}/horarios`);
+            horarios = await response.json();
+            renderHorarios();
+        } catch (error) {
+            console.error('Error loading horarios:', error);
+            showToast('Error al cargar los horarios', 'error');
+        }
+    }
+
+    function renderHorarios() {
+        const tbody = document.getElementById('horarios-body');
+        tbody.innerHTML = horarios.map(horario => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm">${horario.id}</td>
+                    <td class="px-4 py-3 text-sm">${horario.diaSemana}</td>
+                    <td class="px-4 py-3 text-sm">${horario.inicio}</td>
+                    <td class="px-4 py-3 text-sm">${horario.fin}</td>
+                    <td class="px-4 py-3 text-sm">
+                        <button onclick="editHorario(${horario.id})" class="text-blue-600 hover:text-blue-800 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteHorario(${horario.id})" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    function openHorarioModal(horario = null) {
+        document.getElementById('modal-horario').classList.add('is-open');
+        if (horario) {
+            document.getElementById('modal-horario-title').textContent = 'Editar Horario';
+            document.getElementById('horario-id').value = horario.id;
+            document.getElementById('horario-dia').value = horario.diaSemana;
+            document.getElementById('horario-inicio').value = horario.inicio;
+            document.getElementById('horario-fin').value = horario.fin;
+        } else {
+            document.getElementById('modal-horario-title').textContent = 'Nuevo Horario';
+            document.getElementById('form-horario').reset();
+            document.getElementById('horario-id').value = '';
+        }
+    }
+
+    function closeHorarioModal() {
+        document.getElementById('modal-horario').classList.remove('is-open');
+    }
+
+    async function editHorario(id) {
+        const horario = horarios.find(h => h.id === id);
+        if (horario) openHorarioModal(horario);
+    }
+
+    async function deleteHorario(id) {
+        if (!confirm('¿Está seguro de eliminar este horario?')) return;
+        try {
+            await fetch(`${API_URL}/horarios/${id}`, { method: 'DELETE' });
+            showToast('Horario eliminado correctamente', 'success');
+            loadHorarios();
+        } catch (error) {
+            console.error('Error deleting horario:', error);
+            showToast('Error al eliminar el horario', 'error');
+        }
+    }
+
+    document.getElementById('form-horario').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('horario-id').value;
+        const data = {
+            diaSemana: document.getElementById('horario-dia').value,
+            inicio: document.getElementById('horario-inicio').value,
+            fin: document.getElementById('horario-fin').value
+        };
+
+        try {
+            if (id) {
+                await fetch(`${API_URL}/horarios/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                showToast('Horario actualizado correctamente', 'success');
+            } else {
+                await fetch(`${API_URL}/horarios`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                showToast('Horario creado correctamente', 'success');
+            }
+            closeHorarioModal();
+            loadHorarios();
+        } catch (error) {
+            console.error('Error saving horario:', error);
+            showToast('Error al guardar el horario', 'error');
+        }
+    });
+
+    // Initialize
+    loadAulas();
+    loadReservas();
+    loadHorarios();
+</script>
+</body>
+</html>
