@@ -32,8 +32,7 @@ public class Reserva {
     @JsonIgnoreProperties("reservas")
     private Aula aula;
 
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    @JoinColumn(name = "horario_id", nullable = false)
+    @OneToOne()
+    @JoinColumn(name = "horario_id", nullable = true)
     private Horario horario;
-
 }

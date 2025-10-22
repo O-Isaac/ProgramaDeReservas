@@ -1,10 +1,13 @@
 package io.github.isaac.reservas.services;
 
 import io.github.isaac.reservas.beans.CopiarClase;
+import io.github.isaac.reservas.entities.Horario;
 import io.github.isaac.reservas.entities.Reserva;
 import io.github.isaac.reservas.repositories.RepositoryAula;
 import io.github.isaac.reservas.repositories.RepositoryHorario;
 import io.github.isaac.reservas.repositories.RepositoryReserva;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ public class ServiceReserva {
     private final RepositoryReserva repository;
     private final RepositoryAula repositoryAula;
     private final RepositoryHorario repositoryHorario;
+    private final RepositoryReserva repositoryReserva;
     private final CopiarClase copiarClase = new CopiarClase();
 
     private void validarReserva(Reserva reserva) {
@@ -79,8 +83,21 @@ public class ServiceReserva {
         return repository.save(reserva);
     }
 
-    public void eliminar(Long id) {
-        repository.deleteById(id);
+    @Transactional
+    public void eliminarReserva(Long reservaId) {
+        Reserva reserva = repositoryReserva.findById(reservaId)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva no encontrada"));
+
+        // Desvincular el horario
+        if (reserva.getHorario() != null) {
+            Horario horario = reserva.getHorario();
+            horario.setReserva(null); // Romper la relación bidireccional
+            reserva.setHorario(null);
+            repositoryHorario.save(horario); // Guardar el horario desvinculado
+        }
+
+        // Ahora eliminar la reserva
+        repositoryReserva.delete(reserva);
     }
 
     public Optional<Reserva> obtenerPorId(Long id) {

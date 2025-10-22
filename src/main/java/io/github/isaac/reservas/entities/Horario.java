@@ -26,7 +26,7 @@ public class Horario {
 
     private LocalTime fin;
 
-    @OneToOne(mappedBy = "horario", cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+    @OneToOne(mappedBy = "horario", orphanRemoval = false)
     @JsonIgnore
     private Reserva reserva;
 }
