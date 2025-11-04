@@ -2,7 +2,6 @@ package io.github.isaac.reservas.controllers;
 
 import io.github.isaac.reservas.entities.Reserva;
 import io.github.isaac.reservas.services.ServiceReserva;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,48 +15,41 @@ import java.util.List;
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
 public class ControllerReserva {
-
     private final ServiceReserva serviceReserva;
 
     @GetMapping
     public List<Reserva> getReservas() {
-        return serviceReserva.obtenerTodas();
+        return serviceReserva.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Reserva> getReservaById(@PathVariable Long id) {
-        return serviceReserva.obtenerPorId(id)
+        return serviceReserva.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Transactional
-    public ResponseEntity<?> createReserva(@RequestBody Reserva reserva) {
-        try {
-            var aulaCreado = serviceReserva.guardar(reserva);
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create("/reservas"))
-                    .body(aulaCreado);
-        } catch (Exception exception) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(exception.getMessage());
-        }
+    public ResponseEntity<Reserva> createReserva(@RequestBody Reserva reserva) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(URI.create("/reservas"))
+                .body(serviceReserva.create(reserva));
     }
 
     @PutMapping("/{id}")
-    @Transactional
-    public ResponseEntity<Reserva> updateReserva(@RequestBody Reserva reserva, @PathVariable Long id) {
-        // Asegurar que el ID de la entidad coincide con el path variable antes de actualizar
-        reserva.setId(id);
-        return ResponseEntity.ok(serviceReserva.actualizar(reserva, id));
+    public ResponseEntity<Reserva> updateReserva(@PathVariable Long id, @RequestBody Reserva reserva) {
+        return ResponseEntity.ok(serviceReserva.update(id, reserva));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReserva(@PathVariable Long id) {
-        serviceReserva.eliminarReserva(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Reserva> deleteReserva(@PathVariable Long id) {
+        if (serviceReserva.delete(id)) {
+            return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                    .location(URI.create("/reservas"))
+                    .build();
+        }
+
+        return ResponseEntity.notFound().build();
     }
 }
 

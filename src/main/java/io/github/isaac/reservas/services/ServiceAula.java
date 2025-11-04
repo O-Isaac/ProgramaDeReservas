@@ -1,65 +1,58 @@
 package io.github.isaac.reservas.services;
 
-import io.github.isaac.reservas.beans.CopiarClase;
 import io.github.isaac.reservas.entities.Aula;
-import io.github.isaac.reservas.entities.Reserva;
 import io.github.isaac.reservas.repositories.RepositoryAula;
 import io.github.isaac.reservas.repositories.RepositoryReserva;
+import io.github.isaac.reservas.utils.ClassUtil;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
-@AllArgsConstructor
 @Service
+@AllArgsConstructor
 public class ServiceAula {
-    private final CopiarClase copiarClase = new CopiarClase();
     private final RepositoryAula repository;
     private final RepositoryReserva repositoryReserva;
 
-    public List<Aula> obtenerTodas() {
+    public List<Aula> findAll() {
         return repository.findAll();
     }
 
-    public Aula guardar(Aula aula) {
-        return repository.save(aula);
-    }
-
-    @SneakyThrows
-    public Aula actualizar(Aula aulaModificada, Long id) {
-        Optional<Aula> aulaOptional = obtenerPorId(id);
-
-        if (aulaOptional.isPresent()) {
-            Aula aulaExistente = aulaOptional.get();
-
-            // Copiar propiedades que no son null (usa tu bean personalizado)
-            copiarClase.copyProperties(aulaExistente, aulaModificada);
-
-            return repository.save(aulaExistente);
-        }
-
-        throw new IllegalArgumentException("Aula no encontrada");
-    }
-
-    public void eliminar(Long id) {
-        repository.deleteById(id);
-    }
-
-    public Optional<Aula> obtenerPorId(Long id) {
+    public Optional<Aula> getById(Long id) {
         return repository.findById(id);
     }
 
-    public List<Aula> obtenerPorCapacidad(Integer capacidad) {
-        return repository.findByCapacidadGreaterThanEqual(capacidad);
+    @Transactional
+    public boolean delete(Long id) {
+        if (!repository.existsById(id)) {
+            return false;
+        }
+
+        repository.deleteById(id);
+
+        return true;
     }
 
-    public List<Aula> obtenerAulasOrdenadores(boolean esOrdenadores) {
-        return repository.findByEsOrdenadores(esOrdenadores);
+    @Transactional
+    public Aula update(Long id, Aula aulaMod) {
+        Aula aula = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Aula no encontrada"));
+
+        ClassUtil.copyNonNullProperties(aula, aulaMod);
+
+        aula.setId(id);
+
+        return repository.save(aula);
     }
 
-    public List<Reserva> obtenerReservasAula(Long id) {
-        return repositoryReserva.getReservaByAula_Id(id);
+    @Transactional
+    public Aula create(Aula aula) {
+        aula.setId(null);
+        return repository.save(aula);
     }
 }

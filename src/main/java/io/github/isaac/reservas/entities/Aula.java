@@ -1,11 +1,10 @@
 package io.github.isaac.reservas.entities;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.List;
 
@@ -15,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = "reservas")
+@ToString
 public class Aula {
 
     @Id
@@ -26,6 +25,8 @@ public class Aula {
     private Integer capacidad;
     private Boolean esOrdenadores;
 
-    @OneToMany(mappedBy = "aula", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    private List<Reserva> reservas;
+    @OneToMany(mappedBy = "aula", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    @ToString.Exclude
+    List<Reserva> reservas;
 }

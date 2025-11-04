@@ -1,106 +1,115 @@
 package io.github.isaac.reservas.services;
 
-import io.github.isaac.reservas.beans.CopiarClase;
+import io.github.isaac.reservas.entities.Aula;
 import io.github.isaac.reservas.entities.Horario;
 import io.github.isaac.reservas.entities.Reserva;
 import io.github.isaac.reservas.repositories.RepositoryAula;
 import io.github.isaac.reservas.repositories.RepositoryHorario;
 import io.github.isaac.reservas.repositories.RepositoryReserva;
+import io.github.isaac.reservas.utils.ClassUtil;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-@AllArgsConstructor
 @Service
+@AllArgsConstructor
 public class ServiceReserva {
-    private final RepositoryReserva repository;
-    private final RepositoryAula repositoryAula;
-    private final RepositoryHorario repositoryHorario;
     private final RepositoryReserva repositoryReserva;
-    private final CopiarClase copiarClase = new CopiarClase();
+    private final RepositoryHorario repositoryHorario;
+    private final RepositoryAula repositoryAula;
+
+    public List<Reserva> findAll() {
+        return repositoryReserva.findAll();
+    }
+
+    public Optional<Reserva> findById(Long id) {
+        return repositoryReserva.findById(id);
+    }
 
     private void validarReserva(Reserva reserva) {
-        // Validación 2: No permitir reservas en el pasado
         if (reserva.getFecha().isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("No se pueden hacer reservas en el pasado.");
+            throw new IllegalArgumentException("Fecha invalida");
         }
 
-        // Validación 3: Número de asistentes no puede superar la capacidad del aula
+        // Comprobar capacidad
+
         if (reserva.getAsistentes() > reserva.getAula().getCapacidad()) {
-            throw new IllegalArgumentException("El número de asistentes supera la capacidad del aula.");
+            throw new IllegalArgumentException("Los asistentenes no debe ser superior a la capacidad del aula");
         }
 
-        // Validación 4: Comprobar solapamiento de horarios en el aula para la misma fecha
-        List<Reserva> reservasExistentes = repository.findByAulaAndFecha(reserva.getAula(), reserva.getFecha());
+        // Comprobar solapamiento
 
-        for (Reserva reservaExistente : reservasExistentes) {
-            if (reservaExistente.getId() != null && reservaExistente.getId().equals(reserva.getId())) {
-                continue; // Saltar la reserva actual en caso de actualización
-            }
+        boolean existeSolapamiento = repositoryReserva.existsSolapamiento(
+                reserva.getAula().getId(),
+                reserva.getFecha(),
+                reserva.getHorario().getInicio(),
+                reserva.getHorario().getFin()
+        );
 
-            if (reservaExistente.getHorario().getInicio().isBefore(reserva.getHorario().getFin()) &&
-                reserva.getHorario().getInicio().isBefore(reservaExistente.getHorario().getFin())) {
-                throw new IllegalArgumentException("La reserva se solapa con otra reserva existente en el mismo aula y fecha.");
-            }
+        if  (existeSolapamiento) {
+            throw new IllegalArgumentException("Hay solapamiento en los horarios del aula!");
         }
-    }
-
-    public List<Reserva> obtenerTodas() {
-        return repository.findAll();
-    }
-
-    public Reserva guardar(Reserva reserva) {
-        // Resolver Aula
-        if (reserva.getAula() != null && reserva.getAula().getId() != null) {
-            reserva.setAula(repositoryAula.findById(reserva.getAula().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Aula no encontrada")));
-        }
-
-        // Resolver Horario existente (si tiene id)
-        if (reserva.getHorario() != null && reserva.getHorario().getId() != null) {
-            reserva.setHorario(repositoryHorario.findById(reserva.getHorario().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Horario no encontrado")));
-        }
-
-        validarReserva(reserva);
-        return repository.save(reserva);
-    }
-
-    @SneakyThrows
-    public Reserva actualizar(Reserva reservaModificada, Long id) {
-        Reserva reserva = obtenerPorId(id)
-                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrado: " + id));
-
-        copiarClase.copyProperties(reserva, reservaModificada);
-
-        validarReserva(reserva);
-        return repository.save(reserva);
     }
 
     @Transactional
-    public void eliminarReserva(Long reservaId) {
-        Reserva reserva = repositoryReserva.findById(reservaId)
-                .orElseThrow(() -> new EntityNotFoundException("Reserva no encontrada"));
+    public Reserva create(Reserva reserva) {
+        // Se pone null para garantizar que se genere la id
 
-        // Desvincular el horario
-        if (reserva.getHorario() != null) {
-            Horario horario = reserva.getHorario();
-            horario.setReserva(null); // Romper la relación bidireccional
-            reserva.setHorario(null);
-            repositoryHorario.save(horario); // Guardar el horario desvinculado
+        reserva.setId(null);
+
+        // Se comprueba que tenga las relaciones
+
+        if (reserva.getAula() == null || reserva.getAula().getId() == null) {
+            throw new IllegalArgumentException("Debe especificar un aula válida");
         }
 
-        // Ahora eliminar la reserva
-        repositoryReserva.delete(reserva);
+        if (reserva.getHorario() == null || reserva.getHorario().getId() == null) {
+            throw new IllegalArgumentException("Debe especificar un horario válido");
+        }
+
+        Aula aula = repositoryAula.findById(reserva.getAula().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Aula no encontrada"));
+
+        Horario horario = repositoryHorario.findById(reserva.getHorario().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Horario no encontrada"));
+
+
+        reserva.setAula(aula);
+        reserva.setHorario(horario);
+
+        validarReserva(reserva);
+
+        return repositoryReserva.save(reserva);
     }
 
-    public Optional<Reserva> obtenerPorId(Long id) {
-        return repository.findById(id);
+    @Transactional
+    public Reserva update(Long id, Reserva reservaMod) {
+       Reserva reserva = repositoryReserva.findById(id)
+               .orElseThrow(() -> new EntityNotFoundException("Reserva no encontrada"));
+
+       ClassUtil.copyNonNullProperties(reserva, reservaMod);
+
+       validarReserva(reserva);
+
+       reserva.setId(id);
+
+       return repositoryReserva.save(reserva);
+    }
+
+    @Transactional
+    public boolean delete(Long id) {
+        if (!repositoryReserva.existsById(id)) {
+            return false;
+        }
+
+        repositoryReserva.deleteById(id);
+
+        return true;
     }
 }

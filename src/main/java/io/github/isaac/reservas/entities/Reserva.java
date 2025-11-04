@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
 
@@ -13,7 +14,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = { "aula", "horario" })
 public class Reserva {
 
     @Id
@@ -28,11 +28,12 @@ public class Reserva {
     @CreationTimestamp
     private LocalDate createAt;
 
-    @ManyToOne(cascade = { CascadeType.PERSIST })
-    @JsonIgnoreProperties("reservas")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "aula_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Aula aula;
 
-    @OneToOne()
-    @JoinColumn(name = "horario_id", nullable = true)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "horario_id")
     private Horario horario;
 }

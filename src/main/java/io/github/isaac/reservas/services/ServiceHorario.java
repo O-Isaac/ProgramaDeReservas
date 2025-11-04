@@ -1,46 +1,60 @@
 package io.github.isaac.reservas.services;
 
-import io.github.isaac.reservas.beans.CopiarClase;
 import io.github.isaac.reservas.entities.Horario;
 import io.github.isaac.reservas.repositories.RepositoryHorario;
-import jakarta.transaction.Transactional;
+import io.github.isaac.reservas.repositories.RepositoryReserva;
+import io.github.isaac.reservas.utils.ClassUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.Transient;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class ServiceHorario {
-    private final RepositoryHorario repositoryHorario;
-    private final CopiarClase copiarClase = new CopiarClase();
+    private final RepositoryHorario repository;
+    private final RepositoryReserva repositoryReserva;
 
-    public Horario crearHorario(Horario horario) {
-        return repositoryHorario.save(horario);
+    public List<Horario> findAll() {
+        return repository.findAll();
     }
 
-    public List<Horario> obtenerHorarios() {
-        return repositoryHorario.findAll();
+    public Optional<Horario> findById(Long id) {
+        return repository.findById(id);
     }
 
-    public Optional<Horario> obtenerHorario(Long id) {
-        return repositoryHorario.findById(id);
+    @Transactional
+    public Horario save(Horario horario) {
+        horario.setId(null);
+        return repository.save(horario);
     }
 
-    @SneakyThrows
-    public Horario actualizarHorario(Horario horarioModify, Long id) {
-        Horario horario = obtenerHorario(id)
-                .orElseThrow(() -> new IllegalArgumentException("Horario no encontrado: " + id));
+    @Transactional
+    public Horario update(Long id, Horario horarioMod) {
+        Horario horario = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Horario no encontrado"));
 
-        copiarClase.copyProperties(horario, horarioModify);
+        ClassUtil.copyNonNullProperties(horario, horarioMod);
 
-        return repositoryHorario.save(horario);
+        horario.setId(id);
+
+        return repository.save(horario);
     }
 
-    public void eliminarHorario(Long id) {
-        repositoryHorario.deleteById(id);
+    @Transactional
+    public boolean delete(Long id) {
+        if (!repository.existsById(id)) {
+            return false;
+        }
+
+        // Eliminar el horario
+        repository.deleteById(id);
+
+        return true;
     }
+
+
 }

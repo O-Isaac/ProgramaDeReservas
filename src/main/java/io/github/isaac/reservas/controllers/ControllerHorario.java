@@ -2,7 +2,6 @@ package io.github.isaac.reservas.controllers;
 
 import io.github.isaac.reservas.entities.Horario;
 import io.github.isaac.reservas.services.ServiceHorario;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,46 +15,40 @@ import java.util.List;
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
 public class ControllerHorario {
-
-    private ServiceHorario serviceHorario;
+    private final ServiceHorario serviceHorario;
 
     @GetMapping
-    public ResponseEntity<List<Horario>> findAll() {
-        return ResponseEntity.ok(serviceHorario.obtenerHorarios());
+    public List<Horario> getHorarios() {
+        return serviceHorario.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Horario> findById(@PathVariable Long id) {
-        return serviceHorario.obtenerHorario(id)
+    public ResponseEntity<Horario> getHorarioById(@PathVariable Long id) {
+        return serviceHorario.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Transactional
-    public ResponseEntity<?> save(@RequestBody Horario horario) {
-        try {
-            var horarioCreado = serviceHorario.crearHorario(horario);
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create("/horarios"))
-                    .body(horarioCreado);
-        } catch (Exception exception) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(exception.getMessage());
-        }
+    public ResponseEntity<Horario> createHorario(@RequestBody Horario horario) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(URI.create("/horarios"))
+                .body(serviceHorario.save(horario));
     }
 
     @PutMapping("/{id}")
-    @Transactional
-    public ResponseEntity<Horario> update(@PathVariable Long id, @RequestBody Horario horario) {
-        return ResponseEntity.ok(serviceHorario.actualizarHorario(horario, id));
+    public ResponseEntity<Horario> updateHorario(@PathVariable("id") Long id, @RequestBody Horario horario) {
+        return ResponseEntity.ok(serviceHorario.update(id, horario));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        serviceHorario.eliminarHorario(id);
-        return ResponseEntity.noContent().build();
-    }
+    public ResponseEntity<Horario> deleteHorarioById(@PathVariable("id") Long id) {
+        if (serviceHorario.delete(id)) {
+            return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                    .location(URI.create("/horarios"))
+                    .build();
+        }
 
+        return ResponseEntity.notFound().build();
+    }
 }

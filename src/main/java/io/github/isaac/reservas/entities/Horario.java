@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.*;
 import io.github.isaac.reservas.enums.DiaSemana;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "horarios")
@@ -26,7 +28,10 @@ public class Horario {
 
     private LocalTime fin;
 
-    @OneToOne(mappedBy = "horario", orphanRemoval = false)
+    @OneToMany(mappedBy = "horario", cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JsonIgnore
-    private Reserva reserva;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Reserva> reservas;
+
 }

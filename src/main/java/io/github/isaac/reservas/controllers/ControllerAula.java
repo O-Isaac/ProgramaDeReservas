@@ -1,9 +1,7 @@
 package io.github.isaac.reservas.controllers;
 
 import io.github.isaac.reservas.entities.Aula;
-import io.github.isaac.reservas.entities.Reserva;
 import io.github.isaac.reservas.services.ServiceAula;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,64 +15,42 @@ import java.util.List;
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
 public class ControllerAula {
+
     private final ServiceAula serviceAula;
 
     @GetMapping
-    public List<Aula> getAulas(
-            @RequestParam(required = false) Integer capacidad,
-            @RequestParam(required = false) Boolean esOrdenadores
-    ) {
-
-        // /aulas?capacidad=30
-        if (capacidad != null) {
-            return serviceAula.obtenerPorCapacidad(capacidad);
-        }
-
-        // /aulas?esOrdenadores=true
-        if (esOrdenadores != null) {
-            return serviceAula.obtenerAulasOrdenadores(esOrdenadores);
-        }
-
-        // /aulas
-        return serviceAula.obtenerTodas();
+    public List<Aula> getAulas() {
+        return serviceAula.findAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Aula> getAulaById(@PathVariable Long id) {
-        return serviceAula.obtenerPorId(id)
+    public ResponseEntity<Aula> getAula(@PathVariable("id") Long id) {
+        return serviceAula.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAula(@PathVariable Long id) {
-        serviceAula.eliminar(id);
-        return ResponseEntity.noContent().build();
+    @PostMapping
+    public ResponseEntity<Aula> createAula(@RequestBody Aula aula) {
+        // Creacion optimista
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(URI.create("/aulas"))
+                .body(serviceAula.create(aula));
     }
 
     @PutMapping("/{id}")
-    @Transactional
-    public ResponseEntity<Aula> updateAula(@RequestBody Aula aula, @PathVariable Long id) {
-        return ResponseEntity.ok(serviceAula.actualizar(aula, id));
+    public ResponseEntity<Aula>  updateAula(@PathVariable("id") Long id, @RequestBody Aula aula) {
+        return ResponseEntity.ok(serviceAula.update(id, aula));
     }
 
-    @PostMapping
-    @Transactional
-    public ResponseEntity<?> createAula(@RequestBody Aula aula) {
-        try {
-            var aulaCreado = serviceAula.guardar(aula);
-            return ResponseEntity.status(HttpStatus.FOUND)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Aula> deleteAula(@PathVariable("id") Long id) {
+        if (serviceAula.delete(id)) {
+            return ResponseEntity.status(HttpStatus.SEE_OTHER)
                     .location(URI.create("/aulas"))
-                    .body(aulaCreado);
-        } catch (Exception exception) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(exception.getMessage());
+                    .build();
         }
-    }
 
-    @GetMapping("/{id}/reservas")
-    public List<Reserva> getReservasPorId(@PathVariable Long id) {
-        return serviceAula.obtenerReservasAula(id);
+        return ResponseEntity.notFound().build();
     }
 }
