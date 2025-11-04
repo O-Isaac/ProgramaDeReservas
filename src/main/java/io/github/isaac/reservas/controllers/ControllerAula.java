@@ -19,8 +19,11 @@ public class ControllerAula {
     private final ServiceAula serviceAula;
 
     @GetMapping
-    public List<Aula> getAulas() {
-        return serviceAula.findAll();
+    public List<Aula> getAulas(
+            @RequestParam(required = false) Integer capacidad,
+            @RequestParam(required = false) Boolean ordenadores
+    ) {
+        return serviceAula.buscarAulas(capacidad, ordenadores);
     }
 
     @GetMapping("/{id}")

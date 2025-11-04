@@ -19,8 +19,19 @@ public class ServiceAula {
     private final RepositoryAula repository;
     private final RepositoryReserva repositoryReserva;
 
-    public List<Aula> findAll() {
-        return repository.findAll();
+    public List<Aula> buscarAulas(Integer capacidad, Boolean ordenadores) {
+        if (capacidad == null && ordenadores == null) {
+            return repository.findAll();
+        } else if (capacidad != null && ordenadores == null) {
+            return repository.findByCapacidadGreaterThan(capacidad);
+        } else if (capacidad != null && ordenadores != null) {
+            return repository.findByCapacidadGreaterThanAndEsOrdenadores(capacidad, ordenadores);
+        } else {
+            // Solo filtra por ordenadores si no hay capacidad
+            return repository.findAll().stream()
+                    .filter(a -> a.getEsOrdenadores().equals(ordenadores))
+                    .toList();
+        }
     }
 
     public Optional<Aula> getById(Long id) {
