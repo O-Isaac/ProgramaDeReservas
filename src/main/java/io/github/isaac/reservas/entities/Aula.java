@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -37,7 +38,6 @@ public class Aula {
     private boolean esOrdenadores;
 
     @OneToMany(mappedBy = "aula", cascade = CascadeType.REMOVE)
-    @JsonIgnoreProperties("aula")
-    List<Reserva> reservas;
+    private List<Reserva> reservas = new ArrayList<>();
 
 }

@@ -10,8 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.engine.spi.ManagedEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -43,7 +43,6 @@ public class Usuario {
     private String password;
 
     @OneToMany(mappedBy = "usuario",  fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    @JsonIgnoreProperties("usuario")
-    private List<Reserva> reservas;
+    private List<Reserva> reservas = new ArrayList<>();
 
 }

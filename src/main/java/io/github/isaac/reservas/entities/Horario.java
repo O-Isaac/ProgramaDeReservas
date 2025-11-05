@@ -25,19 +25,16 @@ public class Horario {
     private Long id;
 
     @NotNull(message = "El dia de la semana es obligatorio")
-    @NotBlank(message = "El dia de la semana no puede estar en blanco")
+    @Enumerated(EnumType.STRING)
     private DiaSemana diaSemana;
 
     @NotNull(message = "Horario de inicio es obligatorio")
-    @NotBlank(message = "La hora de inicio no puede estar vacio")
     private LocalTime inicio;
 
     @NotNull(message = "Horario de final es obligatorio")
-    @NotBlank(message = "La hora de fin no puede estar vacio")
     private LocalTime fin;
 
     @OneToMany(mappedBy = "horario", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @JsonIgnoreProperties("horario")
     private List<Reserva> reservas;
 
 }

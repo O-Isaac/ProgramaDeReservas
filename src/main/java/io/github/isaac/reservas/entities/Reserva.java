@@ -24,15 +24,14 @@ public class Reserva {
     private Long id;
 
     @JsonFormat(pattern = "dd/MM/yyyy")
-    @NotNull(message = "La fecha es obligatorio")
-    @NotBlank(message = "No se permite una fecha vacia")
+    @NotNull(message = "La fecha es obligatoria")
     private LocalDate fecha;
 
     @NotNull(message = "El motivo es obligatorio")
-    @NotBlank(message = "No puede tener un motivo vacio")
+    @NotBlank(message = "El motivo no puede estar vacío")
     private String motivo;
 
-    @NotNull(message = "Los asistentes es obligatorio")
+    @NotNull(message = "Los asistentes son obligatorios")
     @Positive(message = "Los asistentes deben ser mayor que cero")
     private Integer asistentes;
 
