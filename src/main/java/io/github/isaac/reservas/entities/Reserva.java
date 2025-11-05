@@ -2,6 +2,9 @@ package io.github.isaac.reservas.entities;
 
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
@@ -20,9 +23,17 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @JsonFormat(pattern = "dd-MM-yyyy")
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    @NotNull(message = "La fecha es obligatorio")
+    @NotBlank(message = "No se permite una fecha vacia")
     private LocalDate fecha;
+
+    @NotNull(message = "El motivo es obligatorio")
+    @NotBlank(message = "No puede tener un motivo vacio")
     private String motivo;
+
+    @NotNull(message = "Los asistentes es obligatorio")
+    @Positive(message = "Los asistentes deben ser mayor que cero")
     private Integer asistentes;
 
     @CreationTimestamp
@@ -30,10 +41,17 @@ public class Reserva {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aula_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @NotNull(message = "La reserva debe tener un aula")
     private Aula aula;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "horario_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "horario_id", nullable = false)
+    @NotNull(message = "La reserva debe tener un horario")
     private Horario horario;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    @NotNull(message = "La reserva debe tener un usuario")
+    private Usuario usuario;
+
 }

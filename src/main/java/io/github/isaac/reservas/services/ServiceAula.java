@@ -2,9 +2,7 @@ package io.github.isaac.reservas.services;
 
 import io.github.isaac.reservas.entities.Aula;
 import io.github.isaac.reservas.repositories.RepositoryAula;
-import io.github.isaac.reservas.repositories.RepositoryReserva;
 import io.github.isaac.reservas.utils.ClassUtil;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +15,6 @@ import java.util.Optional;
 @AllArgsConstructor
 public class ServiceAula {
     private final RepositoryAula repository;
-    private final RepositoryReserva repositoryReserva;
 
     public List<Aula> buscarAulas(Integer capacidad, Boolean ordenadores) {
         if (capacidad == null && ordenadores == null) {
@@ -29,7 +26,7 @@ public class ServiceAula {
         } else {
             // Solo filtra por ordenadores si no hay capacidad
             return repository.findAll().stream()
-                    .filter(a -> a.getEsOrdenadores().equals(ordenadores))
+                    .filter(a -> a.isEsOrdenadores() == ordenadores)
                     .toList();
         }
     }

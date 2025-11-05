@@ -64,11 +64,11 @@ public class ServiceReserva {
 
         // Se comprueba que tenga las relaciones
 
-        if (reserva.getAula() == null || reserva.getAula().getId() == null) {
+        if (reserva.getAula().getId() == null) {
             throw new IllegalArgumentException("Debe especificar un aula válida");
         }
 
-        if (reserva.getHorario() == null || reserva.getHorario().getId() == null) {
+        if (reserva.getHorario().getId() == null) {
             throw new IllegalArgumentException("Debe especificar un horario válido");
         }
 
