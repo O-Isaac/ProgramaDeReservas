@@ -336,6 +336,7 @@ Los usuarios pueden tener los siguientes roles:
 ### Enumeraciones
 
 #### DiaSemana
+Valores del enum (sin acentos en el código):
 - LUNES
 - MARTES
 - MIERCOLES
