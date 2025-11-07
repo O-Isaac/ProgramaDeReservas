@@ -21,7 +21,6 @@ public class ControllerHorario {
     private final ServiceHorario serviceHorario;
     private final MapperHorario mapper;
 
-
     @GetMapping
     public List<HorarioDTO> getHorarios() {
         return serviceHorario.findAll()
@@ -49,7 +48,7 @@ public class ControllerHorario {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HorarioDTO> updateHorario(@PathVariable("id") Long id, @RequestBody Horario horario) {
+    public ResponseEntity<HorarioDTO> updateHorario(@PathVariable("id") Long id, @RequestBody HorarioDTO horario) {
         Horario horarioUpdated = serviceHorario.update(id, horario);
         HorarioDTO response = mapper.toDto(horarioUpdated);
 

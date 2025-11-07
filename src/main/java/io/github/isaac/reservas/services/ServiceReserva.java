@@ -1,14 +1,15 @@
 package io.github.isaac.reservas.services;
 
+import io.github.isaac.reservas.dtos.reservas.ReservaUpdateDTO;
 import io.github.isaac.reservas.entities.Aula;
 import io.github.isaac.reservas.entities.Horario;
 import io.github.isaac.reservas.entities.Reserva;
 import io.github.isaac.reservas.entities.Usuario;
+import io.github.isaac.reservas.mappers.MapperReserva;
 import io.github.isaac.reservas.repositories.RepositoryAula;
 import io.github.isaac.reservas.repositories.RepositoryHorario;
 import io.github.isaac.reservas.repositories.RepositoryReserva;
 import io.github.isaac.reservas.repositories.RepositoryUsuario;
-import io.github.isaac.reservas.utils.ClassUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class ServiceReserva {
     private final RepositoryUsuario repositoryUsuario;
     private final RepositoryHorario repositoryHorario;
     private final RepositoryAula repositoryAula;
+    private final MapperReserva mapper;
 
     public List<Reserva> findAll() {
         return repositoryReserva.findAll();
@@ -54,7 +56,7 @@ public class ServiceReserva {
                 reserva.getHorario().getFin()
         );
 
-        if  (existeSolapamiento) {
+        if (existeSolapamiento) {
             throw new IllegalArgumentException("Hay solapamiento en los horarios del aula!");
         }
     }
@@ -85,7 +87,7 @@ public class ServiceReserva {
                 .orElseThrow(() -> new EntityNotFoundException("Horario no encontrada"));
 
         Usuario usuarios = repositoryUsuario.findById(reserva.getUsuario().getId())
-                        .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
         reserva.setUsuario(usuarios);
         reserva.setAula(aula);
@@ -97,17 +99,29 @@ public class ServiceReserva {
     }
 
     @Transactional
-    public Reserva update(Long id, Reserva reservaMod) {
-       Reserva reserva = repositoryReserva.findById(id)
-               .orElseThrow(() -> new EntityNotFoundException("Reserva no encontrada"));
+    public Reserva update(Long id, ReservaUpdateDTO reservaUpdateDTO) {
+        Reserva reserva = repositoryReserva.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Reserva no encontrada"));
 
-       ClassUtil.copyNonNullProperties(reserva, reservaMod);
+        // Actualizamos valores no nulos
+        mapper.updateEntityFromDto(reservaUpdateDTO, reserva);
 
-       validarReserva(reserva);
+        if (reservaUpdateDTO.getAulaId() != null) {
+            Aula aula = repositoryAula.findById(reservaUpdateDTO.getAulaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Aula no encontrada con id: " + reservaUpdateDTO.getAulaId()));
 
-       reserva.setId(id);
+            reserva.setAula(aula);
+        }
 
-       return repositoryReserva.save(reserva);
+        if (reservaUpdateDTO.getHorarioId() != null) {
+            Horario horario = repositoryHorario.findById(reservaUpdateDTO.getHorarioId())
+                    .orElseThrow(() -> new EntityNotFoundException("Horario no encontrado con id: " + reservaUpdateDTO.getHorarioId()));
+
+            reserva.setHorario(horario);
+        }
+
+        // Guardamos en el repositorio
+        return repositoryReserva.save(reserva);
     }
 
     @Transactional

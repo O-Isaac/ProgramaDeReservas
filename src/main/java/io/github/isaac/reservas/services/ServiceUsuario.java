@@ -1,10 +1,8 @@
 package io.github.isaac.reservas.services;
 
 
-import io.github.isaac.reservas.entities.Aula;
 import io.github.isaac.reservas.entities.Usuario;
 import io.github.isaac.reservas.repositories.RepositoryUsuario;
-import io.github.isaac.reservas.utils.ClassUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,8 +41,6 @@ public class ServiceUsuario {
     public Usuario updateById(Long id, Usuario usuarioMod) {
         Usuario usuario = repositoryUsuario.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrada"));
-
-        ClassUtil.copyNonNullProperties(usuario, usuarioMod);
 
         usuario.setId(id);
 

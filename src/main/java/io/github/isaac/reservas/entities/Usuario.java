@@ -10,8 +10,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -20,7 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +37,7 @@ public class Usuario {
 
     @Pattern(regexp = "^(ROLE_ADMIN|ROLE_PROFESOR)$", message = "Rol no valido.")
     @NotBlank(message = "El rol del usuario es obligatorio")
-    private String role;
+    private String roles;
 
     @Email(message = "No es un correo electronico valido.")
     @NotNull(message = "El correo es obligatorio")
@@ -42,7 +47,40 @@ public class Usuario {
     @NotNull(message = "La contraseña es obligatorio")
     private String password;
 
+    private boolean enabled = true;
+
     @OneToMany(mappedBy = "usuario",  fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<Reserva> reservas = new ArrayList<>();
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Arrays.stream(roles.split(","))
+                .map(SimpleGrantedAuthority::new)
+                .toList();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
 }

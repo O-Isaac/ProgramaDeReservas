@@ -1,9 +1,10 @@
 package io.github.isaac.reservas.services;
 
+import io.github.isaac.reservas.dtos.horarios.HorarioDTO;
 import io.github.isaac.reservas.entities.Horario;
+import io.github.isaac.reservas.mappers.MapperHorario;
 import io.github.isaac.reservas.repositories.RepositoryHorario;
 import io.github.isaac.reservas.repositories.RepositoryReserva;
-import io.github.isaac.reservas.utils.ClassUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.Optional;
 public class ServiceHorario {
     private final RepositoryHorario repository;
     private final RepositoryReserva repositoryReserva;
+    private final MapperHorario mapper;
 
     public List<Horario> findAll() {
         return repository.findAll();
@@ -33,13 +35,12 @@ public class ServiceHorario {
     }
 
     @Transactional
-    public Horario update(Long id, Horario horarioMod) {
+    public Horario update(Long id, HorarioDTO horarioDTO) {
         Horario horario = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Horario no encontrado"));
 
-        ClassUtil.copyNonNullProperties(horario, horarioMod);
-
-        horario.setId(id);
+        // Actualizamos la hora
+        mapper.updateEntityFromDto(horarioDTO, horario);
 
         return repository.save(horario);
     }

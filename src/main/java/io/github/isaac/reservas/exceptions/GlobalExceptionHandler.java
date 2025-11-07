@@ -1,6 +1,8 @@
 package io.github.isaac.reservas.exceptions;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,28 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // Manejamos los error EntityExists
+    @ExceptionHandler(EntityExistsException.class)
+    public ResponseEntity<?> handleEntityExistsException(EntityExistsException ex) {
+        Map<String, String> error =  new HashMap<>();
+
+        error.put("message", ex.getMessage());
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    // Manejamos errores NotEntityFount
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException ex) {
+        Map<String,Object> error = new HashMap<>();
+
+        error.put("message", ex.getMessage());
+        error.put("status", "Not Found");
+        error.put("timestamp", System.currentTimeMillis());
+
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
 
     // Manejamos los errores de formato como los enums
     @ExceptionHandler(InvalidFormatException.class)

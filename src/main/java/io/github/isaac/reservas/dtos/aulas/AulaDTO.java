@@ -12,5 +12,6 @@ public class AulaDTO {
     private Long id;
     private String nombre;
     private boolean esOrdenadores;
+    private int capacidad;
     private List<ReservaResponseDTO> reservas;
 }

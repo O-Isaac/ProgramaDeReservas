@@ -2,6 +2,7 @@ package io.github.isaac.reservas.controllers;
 
 import io.github.isaac.reservas.dtos.reservas.ReservaRequestDTO;
 import io.github.isaac.reservas.dtos.reservas.ReservaResponseDTO;
+import io.github.isaac.reservas.dtos.reservas.ReservaUpdateDTO;
 import io.github.isaac.reservas.entities.Reserva;
 import io.github.isaac.reservas.mappers.MapperReserva;
 import io.github.isaac.reservas.services.ServiceReserva;
@@ -50,10 +51,9 @@ public class ControllerReserva {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReservaResponseDTO> updateReserva(@PathVariable Long id, @RequestBody Reserva reserva) {
+    public ResponseEntity<ReservaResponseDTO> updateReserva(@PathVariable Long id, @RequestBody ReservaUpdateDTO reserva) {
         Reserva reservaCreada = serviceReserva.update(id, reserva);
         ReservaResponseDTO response = mappper.toResponse(reservaCreada);
-
         return ResponseEntity.ok(response);
     }
 

@@ -9,7 +9,10 @@ import java.time.LocalTime;
 @Data
 @AllArgsConstructor
 public class HorarioDTO {
-    private DiaSemana diaSemana;
+
+    private Long id;
+    private DiaSemana dia;
     private LocalTime inicio;
     private LocalTime fin;
+
 }

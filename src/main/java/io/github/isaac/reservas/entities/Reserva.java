@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class Reserva {
 
     @Id
@@ -41,16 +42,19 @@ public class Reserva {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aula_id", nullable = false)
     @NotNull(message = "La reserva debe tener un aula")
+    @ToString.Exclude
     private Aula aula;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "horario_id", nullable = false)
     @NotNull(message = "La reserva debe tener un horario")
+    @ToString.Exclude
     private Horario horario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     @NotNull(message = "La reserva debe tener un usuario")
+    @ToString.Exclude
     private Usuario usuario;
 
 }

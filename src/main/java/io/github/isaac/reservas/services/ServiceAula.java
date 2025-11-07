@@ -1,8 +1,9 @@
 package io.github.isaac.reservas.services;
 
+import io.github.isaac.reservas.dtos.aulas.AulaUpdateDTO;
 import io.github.isaac.reservas.entities.Aula;
+import io.github.isaac.reservas.mappers.MapperAula;
 import io.github.isaac.reservas.repositories.RepositoryAula;
-import io.github.isaac.reservas.utils.ClassUtil;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class ServiceAula {
     private final RepositoryAula repository;
+    private final MapperAula mapperAula;
 
     public List<Aula> buscarAulas(Integer capacidad, Boolean ordenadores) {
         if (capacidad == null && ordenadores == null) {
@@ -47,13 +49,11 @@ public class ServiceAula {
     }
 
     @Transactional
-    public Aula update(Long id, Aula aulaMod) {
+    public Aula update(Long id, AulaUpdateDTO aulaUpdateDTO) {
         Aula aula = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Aula no encontrada"));
 
-        ClassUtil.copyNonNullProperties(aula, aulaMod);
-
-        aula.setId(id);
+        mapperAula.updateEntityFromDto(aulaUpdateDTO, aula);
 
         return repository.save(aula);
     }
