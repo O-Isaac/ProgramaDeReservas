@@ -22,6 +22,8 @@ Este proyecto es una aplicación RESTful API construida con Spring Boot que prop
 - **Lombok** - Para reducir código boilerplate
 - **MapStruct** - Mapeo entre entidades y DTOs
 - **JWT (JSON Web Tokens)** - Autenticación stateless
+- **SpringDoc OpenAPI** - Generación automática de documentación API
+- **Scalar UI** - Interfaz interactiva para documentación API
 - **Maven** - Gestión de dependencias y construcción del proyecto
 
 ## 🔐 Sistema de Roles
@@ -95,6 +97,20 @@ java -jar target/reservas-0.0.1-SNAPSHOT.jar
 
 La aplicación se iniciará en `http://localhost:8080`
 
+## 📖 Documentación Interactiva de la API
+
+La aplicación incluye documentación interactiva de la API usando **OpenAPI 3.0** con **Scalar UI**. Una vez que la aplicación esté ejecutándose, puedes acceder a:
+
+- **Documentación Interactiva (Scalar UI)**: `http://localhost:8080/docs`
+- **Especificación OpenAPI (JSON)**: `http://localhost:8080/v3/api-docs`
+
+La interfaz de Scalar te permite:
+- Explorar todos los endpoints disponibles
+- Ver esquemas de DTOs y modelos de datos
+- Probar las peticiones directamente desde el navegador
+- Ver ejemplos de request/response
+- Autenticarte con JWT directamente en la interfaz
+
 ## 📚 API Endpoints
 
 ### 🔓 Autenticación (`/auth`)
@@ -114,10 +130,10 @@ Gestión de reservas de aulas.
 
 | Método | Endpoint | Descripción | Rol Requerido | DTO Request | DTO Response |
 |--------|----------|-------------|---------------|-------------|--------------|
-| GET | `/reservas` | Obtener todas las reservas | Autenticado | - | `List<ReservaResponseDTO>` |
-| GET | `/reservas/{id}` | Obtener una reserva por ID | Autenticado | - | `ReservaResponseDTO` |
-| POST | `/reservas` | Crear una nueva reserva | Autenticado | `ReservaRequestDTO` | `ReservaResponseDTO` |
-| PUT | `/reservas/{id}` | Actualizar una reserva existente | Autenticado | `ReservaUpdateDTO` | `ReservaResponseDTO` |
+| GET | `/reservas` | Obtener todas las reservas | Autenticado | - | `List<ReservaResponse>` |
+| GET | `/reservas/{id}` | Obtener una reserva por ID | Autenticado | - | `ReservaResponse` |
+| POST | `/reservas` | Crear una nueva reserva | Autenticado | `ReservaPostRequest` | `ReservaResponse` |
+| PUT | `/reservas/{id}` | Actualizar una reserva existente | Autenticado | `ReservaUpdateRequest` | `ReservaResponse` |
 | DELETE | `/reservas/{id}` | Eliminar una reserva | Autenticado | - | 303 See Other |
 
 ### 🏫 Aulas (`/aulas`)
@@ -126,10 +142,10 @@ Gestión de aulas y espacios disponibles.
 
 | Método | Endpoint | Descripción | Rol Requerido | DTO Request | DTO Response |
 |--------|----------|-------------|---------------|-------------|--------------|
-| GET | `/aulas` | Obtener todas las aulas | Autenticado | Query params opcionales: `capacidad`, `ordenadores` | `List<AulaDTO>` |
-| GET | `/aulas/{id}` | Obtener un aula por ID | Autenticado | - | `AulaDTO` |
-| POST | `/aulas` | Crear una nueva aula | Autenticado | `Aula` (Entity) | `AulaDTO` |
-| PUT | `/aulas/{id}` | Actualizar un aula existente | Autenticado | `AulaUpdateDTO` | `AulaDTO` |
+| GET | `/aulas` | Obtener todas las aulas | Autenticado | Query params opcionales: `capacidad`, `ordenadores` | `List<AulaResponse>` |
+| GET | `/aulas/{id}` | Obtener un aula por ID | Autenticado | - | `AulaResponse` |
+| POST | `/aulas` | Crear una nueva aula | Autenticado | `AulaPostRequest` | `AulaResponse` |
+| PUT | `/aulas/{id}` | Actualizar un aula existente | Autenticado | `AulaUpdateRequest` | `AulaResponse` |
 | DELETE | `/aulas/{id}` | Eliminar un aula | Autenticado | - | 303 See Other |
 
 ### ⏰ Horarios (`/horarios`)
@@ -138,10 +154,10 @@ Administración de franjas horarias.
 
 | Método | Endpoint | Descripción | Rol Requerido | DTO Request | DTO Response |
 |--------|----------|-------------|---------------|-------------|--------------|
-| GET | `/horarios` | Obtener todos los horarios | Autenticado | - | `List<HorarioDTO>` |
-| GET | `/horarios/{id}` | Obtener un horario por ID | Autenticado | - | `HorarioDTO` |
-| POST | `/horarios` | Crear un nuevo horario | Autenticado | `Horario` (Entity) | `HorarioDTO` |
-| PUT | `/horarios/{id}` | Actualizar un horario existente | Autenticado | `HorarioDTO` | `HorarioDTO` |
+| GET | `/horarios` | Obtener todos los horarios | Autenticado | - | `List<HorarioResponse>` |
+| GET | `/horarios/{id}` | Obtener un horario por ID | Autenticado | - | `HorarioResponse` |
+| POST | `/horarios` | Crear un nuevo horario | Autenticado | `HorarioPostRequest` | `HorarioResponse` |
+| PUT | `/horarios/{id}` | Actualizar un horario existente | Autenticado | `HorarioUpdateRequest` | `HorarioResponse` |
 | DELETE | `/horarios/{id}` | Eliminar un horario | Autenticado | - | 303 See Other |
 
 ### 👥 Usuarios (`/usuarios`)
@@ -150,10 +166,10 @@ Gestión de usuarios del sistema.
 
 | Método | Endpoint | Descripción | Rol Requerido | DTO Request | DTO Response |
 |--------|----------|-------------|---------------|-------------|--------------|
-| GET | `/usuarios` | Obtener todos los usuarios | Autenticado | - | `List<UsuarioDTO>` |
-| GET | `/usuarios/{id}` | Obtener un usuario por ID | Autenticado | - | `UsuarioDTO` |
-| POST | `/usuarios` | Crear un nuevo usuario | Autenticado | `Usuario` (Entity) | `UsuarioDTO` |
-| PUT | `/usuarios/{id}` | Actualizar un usuario existente | Autenticado | `Usuario` (Entity) | `UsuarioDTO` |
+| GET | `/usuarios` | Obtener todos los usuarios | Autenticado | - | `List<UsuarioResponse>` |
+| GET | `/usuarios/{id}` | Obtener un usuario por ID | Autenticado | - | `UsuarioResponse` |
+| POST | `/usuarios` | Crear un nuevo usuario | Autenticado | `UsuarioPostRequest` | `UsuarioResponse` |
+| PUT | `/usuarios/{id}` | Actualizar un usuario existente | Autenticado | `UsuarioUpdateRequest` | `UsuarioResponse` |
 | DELETE | `/usuarios/{id}` | Eliminar un usuario | Autenticado | - | 303 See Other |
 
 ## 📝 DTOs (Data Transfer Objects)
@@ -186,7 +202,7 @@ Gestión de usuarios del sistema.
 
 ### Reservas
 
-#### `ReservaRequestDTO`
+#### `ReservaPostRequest`
 ```json
 {
   "fecha": "string (formato: dd/MM/yyyy, requerido)",
@@ -198,22 +214,33 @@ Gestión de usuarios del sistema.
 }
 ```
 
-#### `ReservaResponseDTO`
+#### `ReservaResponse`
 ```json
 {
   "id": "number",
   "fecha": "string (formato: dd/MM/yyyy)",
   "motivo": "string",
   "asistentes": "number",
-  "aulaNombre": "string",
-  "capacidad": "number",
-  "inicio": "time",
-  "fin": "time",
-  "ordenadores": "boolean"
+  "aula": {
+    "id": "number",
+    "nombre": "string",
+    "capacidad": "number",
+    "ordenadores": "boolean"
+  },
+  "horario": {
+    "id": "number",
+    "inicio": "time",
+    "fin": "time",
+    "tipo": "TipoHorario (RECREO, LECTIVA, MEDIODIA)"
+  },
+  "usuario": {
+    "id": "number",
+    "nombre": "string"
+  }
 }
 ```
 
-#### `ReservaUpdateDTO`
+#### `ReservaUpdateRequest`
 ```json
 {
   "fecha": "string (formato: dd/MM/yyyy, opcional)",
@@ -226,47 +253,119 @@ Gestión de usuarios del sistema.
 
 ### Aulas
 
-#### `AulaDTO`
+#### `AulaResponse`
 ```json
 {
   "id": "number",
   "nombre": "string",
-  "esOrdenadores": "boolean",
+  "ordenadores": "boolean",
   "capacidad": "number",
-  "reservas": "List<ReservaResponseDTO>"
+  "reservas": [
+    {
+      "fecha": "string (formato: dd/MM/yyyy)",
+      "motivo": "string",
+      "asistentes": "number"
+    }
+  ]
 }
 ```
 
-#### `AulaUpdateDTO`
+#### `AulaPostRequest`
+```json
+{
+  "nombre": "string (requerido)",
+  "ordenadores": "boolean (requerido)",
+  "capacidad": "number (requerido)"
+}
+```
+
+#### `AulaUpdateRequest`
 ```json
 {
   "nombre": "string (opcional)",
-  "esOrdenadores": "boolean (opcional)",
+  "ordenadores": "boolean (opcional)",
   "capacidad": "number (opcional)"
 }
 ```
 
 ### Horarios
 
-#### `HorarioDTO`
+#### `HorarioResponse`
 ```json
 {
   "id": "number",
   "dia": "DiaSemana (LUNES, MARTES, MIERCOLES, JUEVES, VIERNES, SABADO, DOMINGO)",
+  "tipo": "TipoHorario (RECREO, LECTIVA, MEDIODIA)",
   "inicio": "time",
-  "fin": "time"
+  "fin": "time",
+  "session": "number (número de sesión)",
+  "reservas": [
+    {
+      "fecha": "string (formato: dd/MM/yyyy)",
+      "motivo": "string",
+      "asistentes": "number"
+    }
+  ]
+}
+```
+
+#### `HorarioPostRequest`
+```json
+{
+  "dia": "DiaSemana (requerido)",
+  "tipo": "TipoHorario (requerido)",
+  "inicio": "time (requerido)",
+  "fin": "time (requerido)",
+  "session": "number (opcional)"
+}
+```
+
+#### `HorarioUpdateRequest`
+```json
+{
+  "dia": "DiaSemana (opcional)",
+  "tipo": "TipoHorario (opcional)",
+  "inicio": "time (opcional)",
+  "fin": "time (opcional)",
+  "session": "number (opcional)"
 }
 ```
 
 ### Usuarios
 
-#### `UsuarioDTO`
+#### `UsuarioResponse`
 ```json
 {
   "id": "number",
   "nombre": "string",
   "email": "string",
-  "reservas": "List<ReservaResponseDTO>"
+  "enabled": "boolean",
+  "roles": "string",
+  "reservas": [
+    {
+      "fecha": "string (formato: dd/MM/yyyy)",
+      "motivo": "string",
+      "asistentes": "number"
+    }
+  ]
+}
+```
+
+#### `UsuarioPostRequest`
+```json
+{
+  "nombre": "string (requerido)",
+  "email": "string (email válido, requerido)",
+  "password": "string (requerido)",
+  "roles": "string (opcional)",
+  "enabled": "boolean (opcional)"
+}
+```
+
+#### `UsuarioUpdateRequest`
+```json
+{
+  "roles": "string (opcional)"
 }
 ```
 
@@ -320,9 +419,11 @@ Los usuarios pueden tener los siguientes roles:
 
 #### Horario
 - `id`: Identificador único
-- `diaSemana`: Día de la semana (enum)
+- `diaSemana`: Día de la semana (enum DiaSemana)
+- `tipo`: Tipo de horario (enum TipoHorario)
 - `inicio`: Hora de inicio
 - `fin`: Hora de finalización
+- `session`: Número de sesión (opcional)
 - **Relaciones**: Un horario puede estar en múltiples reservas
 
 #### Reserva
@@ -345,6 +446,12 @@ Valores del enum (sin acentos en el código):
 - SABADO
 - DOMINGO
 
+#### TipoHorario
+Valores del enum para clasificar los tipos de horarios:
+- RECREO - Períodos de descanso
+- LECTIVA - Horas de clase
+- MEDIODIA - Período del mediodía
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -354,9 +461,11 @@ src/
 │   │   └── io/github/isaac/reservas/
 │   │       ├── ReservasApplication.java      # Clase principal
 │   │       ├── config/                        # Configuración
-│   │       │   └── SecurityConfig.java        # Configuración de seguridad JWT
+│   │       │   ├── SecurityConfig.java        # Configuración de seguridad JWT
+│   │       │   ├── OpenApiConfig.java         # Configuración de OpenAPI/Swagger
+│   │       │   └── CorsConfig.java            # Configuración de CORS
 │   │       ├── controllers/                   # Controladores REST
-│   │       │   ├── AuthController.java        # Autenticación
+│   │       │   ├── ControllerAuth.java        # Autenticación
 │   │       │   ├── ControllerReserva.java     # Gestión de reservas
 │   │       │   ├── ControllerAula.java        # Gestión de aulas
 │   │       │   ├── ControllerHorario.java     # Gestión de horarios
@@ -367,43 +476,50 @@ src/
 │   │       │   │   ├── RegisterRequest.java
 │   │       │   │   └── ChangePasswordRequest.java
 │   │       │   ├── reservas/                  # DTOs de reservas
-│   │       │   │   ├── ReservaRequestDTO.java
-│   │       │   │   ├── ReservaResponseDTO.java
-│   │       │   │   └── ReservaUpdateDTO.java
+│   │       │   │   ├── ReservaPostRequest.java
+│   │       │   │   ├── ReservaResponse.java
+│   │       │   │   └── ReservaUpdateRequest.java
 │   │       │   ├── aulas/                     # DTOs de aulas
-│   │       │   │   ├── AulaDTO.java
-│   │       │   │   └── AulaUpdateDTO.java
+│   │       │   │   ├── AulaResponse.java
+│   │       │   │   ├── AulaPostRequest.java
+│   │       │   │   └── AulaUpdateRequest.java
 │   │       │   ├── horarios/                  # DTOs de horarios
-│   │       │   │   └── HorarioDTO.java
+│   │       │   │   ├── HorarioResponse.java
+│   │       │   │   ├── HorarioPostRequest.java
+│   │       │   │   └── HorarioUpdateRequest.java
 │   │       │   └── usuarios/                  # DTOs de usuarios
-│   │       │       └── UsuarioDTO.java
+│   │       │       ├── UsuarioResponse.java
+│   │       │       ├── UsuarioPostRequest.java
+│   │       │       └── UsuarioUpdateRequest.java
 │   │       ├── entities/                      # Entidades JPA
 │   │       │   ├── Usuario.java               # Entidad Usuario (implementa UserDetails)
 │   │       │   ├── Reserva.java               # Entidad Reserva
 │   │       │   ├── Aula.java                  # Entidad Aula
 │   │       │   └── Horario.java               # Entidad Horario
 │   │       ├── enums/                         # Enumeraciones
-│   │       │   └── DiaSemana.java             # Días de la semana
+│   │       │   ├── DiaSemana.java             # Días de la semana
+│   │       │   └── TipoHorario.java           # Tipos de horario
 │   │       ├── exceptions/                    # Manejo de excepciones
 │   │       │   └── GlobalExceptionHandler.java
 │   │       ├── mappers/                       # MapStruct mappers
-│   │       │   ├── MapperReserva.java
-│   │       │   ├── MapperAula.java
-│   │       │   ├── MapperHorario.java
-│   │       │   └── MapperUsuario.java
+│   │       │   ├── ReservaMapper.java
+│   │       │   ├── AulaMapper.java
+│   │       │   ├── HorarioMapper.java
+│   │       │   └── UsuarioMapper.java
 │   │       ├── repositories/                  # Repositorios JPA
 │   │       │   ├── RepositoryUsuario.java
 │   │       │   ├── RepositoryReserva.java
 │   │       │   ├── RepositoryAula.java
 │   │       │   └── RepositoryHorario.java
 │   │       ├── services/                      # Servicios de negocio
-│   │       │   ├── AuthService.java           # Servicio de autenticación
-│   │       │   ├── JwtService.java            # Servicio de JWT
-│   │       │   ├── CustomUserDetailsService.java  # UserDetailsService
-│   │       │   ├── ServiceReserva.java
-│   │       │   ├── ServiceAula.java
-│   │       │   ├── ServiceHorario.java
-│   │       │   └── ServiceUsuario.java
+│   │       │   ├── auth/
+│   │       │   │   ├── AuthService.java           # Servicio de autenticación
+│   │       │   │   ├── JWTService.java            # Servicio de JWT
+│   │       │   │   └── CustomUserDetailsService.java  # UserDetailsService
+│   │       │   ├── ReservaService.java
+│   │       │   ├── AulaService.java
+│   │       │   ├── HorarioService.java
+│   │       │   └── UsuarioService.java
 │   │       └── utils/                         # Utilidades
 │   │           └── ResponseUtil.java
 │   └── resources/
@@ -438,6 +554,9 @@ Spring Boot DevTools está incluido en el proyecto, lo que permite recarga autom
 - Los tokens JWT deben incluirse en el header `Authorization: Bearer <token>` para endpoints protegidos
 - Las contraseñas se cifran usando **BCrypt** antes de almacenarse en la base de datos
 - La aplicación usa sesiones **stateless** (sin estado del lado del servidor)
+- **CORS** está configurado para aceptar peticiones desde `http://localhost:3000` (útil para desarrollo con frontend)
+- La documentación interactiva de la API está disponible en `/docs` usando **Scalar UI**
+- Los DTOs usan convenciones de nombres: `*PostRequest` para crear, `*UpdateRequest` para actualizar, y `*Response` para respuestas
 
 ## 🔍 Ejemplos de Uso
 
