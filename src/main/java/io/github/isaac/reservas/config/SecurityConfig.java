@@ -26,17 +26,25 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     private final JWTService jwtService;
 
+    private static final String[] PUBLIC_URLS = {
+            "/auth/**",
+            "/docs/**",
+            "/favicon.svg",
+            "/actuator/health/**",
+            "/v3/api-docs/**",
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 // Deshabilitar CSRF (no necesario en APIs REST con JWT)
                 .csrf(AbstractHttpConfigurer::disable)
-
+                .cors(AbstractHttpConfigurer::disable)
                 // Configurar autorización de peticiones HTTP
                 // Define qué rutas son públicas y cuáles requieren autenticación
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**")
-                        .permitAll()
+                        .requestMatchers(PUBLIC_URLS).permitAll()
+                        .requestMatchers("/actuator/scalar").authenticated()
                         .anyRequest().authenticated()
                 )
 
