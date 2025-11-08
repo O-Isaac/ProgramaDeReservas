@@ -2,6 +2,7 @@ package io.github.isaac.reservas.entities;
 
 import com.fasterxml.jackson.annotation.*;
 import io.github.isaac.reservas.enums.DiaSemana;
+import io.github.isaac.reservas.enums.TipoHorario;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,18 +22,20 @@ import java.util.List;
 public class Horario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "El dia de la semana es obligatorio")
     @Enumerated(EnumType.STRING)
     private DiaSemana diaSemana;
 
-    @NotNull(message = "Horario de inicio es obligatorio")
+    @Enumerated(EnumType.STRING)
+    private TipoHorario tipo;
+
     private LocalTime inicio;
 
-    @NotNull(message = "Horario de final es obligatorio")
     private LocalTime fin;
+
+    private int sessionDia;
 
     @OneToMany(mappedBy = "horario", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Reserva> reservas;

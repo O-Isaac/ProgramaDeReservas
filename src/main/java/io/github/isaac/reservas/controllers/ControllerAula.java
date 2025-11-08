@@ -1,10 +1,9 @@
 package io.github.isaac.reservas.controllers;
 
-import io.github.isaac.reservas.dtos.aulas.AulaDTO;
-import io.github.isaac.reservas.dtos.aulas.AulaUpdateDTO;
-import io.github.isaac.reservas.entities.Aula;
-import io.github.isaac.reservas.mappers.MapperAula;
-import io.github.isaac.reservas.services.ServiceAula;
+import io.github.isaac.reservas.dtos.aula.AulaPostRequest;
+import io.github.isaac.reservas.dtos.aula.AulaResponse;
+import io.github.isaac.reservas.dtos.aula.AulaUpdateRequest;
+import io.github.isaac.reservas.services.AulaService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,55 +19,37 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class ControllerAula {
 
-    private final ServiceAula serviceAula;
-    private final MapperAula mapper;
+    private final AulaService aulaService;
 
     @GetMapping
-    public List<AulaDTO> getAulas(
-            @RequestParam(required = false) Integer capacidad,
-            @RequestParam(required = false) Boolean ordenadores
-    ) {
-        return serviceAula.buscarAulas(capacidad, ordenadores)
-                .stream()
-                .map(mapper::toDto)
-                .toList();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<AulaDTO> getAula(@PathVariable("id") Long id) {
-        return serviceAula.getById(id)
-                .map(mapper::toDto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<List<AulaResponse>> getAulas() {
+        return ResponseEntity.ok(aulaService.getAulas());
     }
 
     @PostMapping
-    public ResponseEntity<AulaDTO> createAula(@Valid @RequestBody Aula aula) {
-        // Creacion optimista
-        Aula aulaCreated = serviceAula.create(aula);
-        AulaDTO response = mapper.toDto(aulaCreated);
-
-        return ResponseEntity.status(HttpStatus.CREATED)
+    public ResponseEntity<AulaResponse> addAula(@Valid @RequestBody AulaPostRequest request) {
+        return ResponseEntity.status(HttpStatus.SEE_OTHER)
                 .location(URI.create("/aulas"))
-                .body(response);
+                .body(aulaService.addAula(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AulaDTO>  updateAula(@PathVariable("id") Long id, @RequestBody AulaUpdateDTO aula) {
-        Aula aulaUpdated = serviceAula.update(id, aula);
-        AulaDTO response = mapper.toDto(aulaUpdated);
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AulaResponse> updateAula(@PathVariable Long id, @Valid @RequestBody AulaUpdateRequest request) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .location(URI.create("/aulas/" + id))
+                .body(aulaService.updateAula(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<AulaDTO> deleteAula(@PathVariable("id") Long id) {
-        if (serviceAula.delete(id)) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                    .location(URI.create("/aulas"))
-                    .build();
-        }
+    public ResponseEntity<Void> deleteAula(@PathVariable Long id) {
+        aulaService.deleteAula(id);
+        return ResponseEntity.noContent().build();
+    }
 
-        return ResponseEntity.notFound().build();
+    @GetMapping("/{id}")
+    public ResponseEntity<AulaResponse> getAula(@PathVariable Long id) {
+        return aulaService.getAula(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

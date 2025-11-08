@@ -1,11 +1,9 @@
 package io.github.isaac.reservas.controllers;
 
-import io.github.isaac.reservas.dtos.reservas.ReservaRequestDTO;
-import io.github.isaac.reservas.dtos.reservas.ReservaResponseDTO;
-import io.github.isaac.reservas.dtos.reservas.ReservaUpdateDTO;
-import io.github.isaac.reservas.entities.Reserva;
-import io.github.isaac.reservas.mappers.MapperReserva;
-import io.github.isaac.reservas.services.ServiceReserva;
+import io.github.isaac.reservas.dtos.reserva.ReservaPostRequest;
+import io.github.isaac.reservas.dtos.reserva.ReservaResponse;
+import io.github.isaac.reservas.dtos.reserva.ReservaUpdateRequest;
+import io.github.isaac.reservas.services.ReservaService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,52 +18,38 @@ import java.util.List;
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
 public class ControllerReserva {
-    private final ServiceReserva serviceReserva;
-    private final MapperReserva mappper;
+
+    private final ReservaService reservaService;
 
     @GetMapping
-    public List<ReservaResponseDTO> getReservas() {
-        return serviceReserva.findAll()
-                .stream()
-                .map(mappper::toResponse)
-                .toList();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ReservaResponseDTO> getReservaById(@PathVariable Long id) {
-        return serviceReserva.findById(id)
-                .map(mappper::toResponse)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<List<ReservaResponse>> getReservas() {
+        return ResponseEntity.ok(reservaService.getReservas());
     }
 
     @PostMapping
-    public ResponseEntity<ReservaResponseDTO> createReserva(@RequestBody @Valid ReservaRequestDTO reservaRequestDTO) {
-        Reserva reserva = mappper.toEntity(reservaRequestDTO);
-        Reserva reservaCreada = serviceReserva.create(reserva);
-        ReservaResponseDTO response = mappper.toResponse(reservaCreada);
-
+    public ResponseEntity<ReservaResponse> createReserva(@Valid @RequestBody ReservaPostRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .location(URI.create("/reservas"))
-                .body(response);
+                .body(reservaService.addReserva(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ReservaResponseDTO> updateReserva(@PathVariable Long id, @RequestBody ReservaUpdateDTO reserva) {
-        Reserva reservaCreada = serviceReserva.update(id, reserva);
-        ReservaResponseDTO response = mappper.toResponse(reservaCreada);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ReservaResponse>  updateReserva(@PathVariable Long id, @RequestBody ReservaUpdateRequest request) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(reservaService.updateReserva(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ReservaResponseDTO> deleteReserva(@PathVariable Long id) {
-        if (serviceReserva.delete(id)) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                    .location(URI.create("/reservas"))
-                    .build();
-        }
+    public ResponseEntity<Void> deleteReserva(@PathVariable Long id) {
+        reservaService.deleteReserva(id);
+        return ResponseEntity.noContent().build();
+    }
 
-        return ResponseEntity.notFound().build();
+    @GetMapping("/{id}")
+    public ResponseEntity<ReservaResponse> getReserva(@PathVariable Long id) {
+        return reservaService.getReserva(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
 

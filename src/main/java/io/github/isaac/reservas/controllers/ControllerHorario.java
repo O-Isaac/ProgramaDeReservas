@@ -1,9 +1,9 @@
 package io.github.isaac.reservas.controllers;
 
-import io.github.isaac.reservas.dtos.horarios.HorarioDTO;
-import io.github.isaac.reservas.entities.Horario;
-import io.github.isaac.reservas.mappers.MapperHorario;
-import io.github.isaac.reservas.services.ServiceHorario;
+import io.github.isaac.reservas.dtos.horario.HorarioPostRequest;
+import io.github.isaac.reservas.dtos.horario.HorarioResponse;
+import io.github.isaac.reservas.dtos.horario.HorarioUpdateRequest;
+import io.github.isaac.reservas.services.HorarioService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,56 +13,43 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/horarios")
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
 public class ControllerHorario {
-    private final ServiceHorario serviceHorario;
-    private final MapperHorario mapper;
+    private final HorarioService horarioService;
 
     @GetMapping
-    public List<HorarioDTO> getHorarios() {
-        return serviceHorario.findAll()
-                .stream()
-                .map(mapper::toDto)
-                .toList();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<HorarioDTO> getHorarioById(@PathVariable Long id) {
-        return serviceHorario.findById(id)
-                .map(mapper::toDto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<List<HorarioResponse>> findAll() {
+        return ResponseEntity.ok(horarioService.getHorarios());
     }
 
     @PostMapping
-    public ResponseEntity<HorarioDTO> createHorario(@Valid @RequestBody Horario horario) {
-        Horario horarioCreated = serviceHorario.save(horario);
-        HorarioDTO response = mapper.toDto(horarioCreated);
-
+    public ResponseEntity<HorarioResponse> addHorario(@Valid @RequestBody HorarioPostRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .location(URI.create("/horarios"))
-                .body(response);
+                .body(horarioService.addHorario(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HorarioDTO> updateHorario(@PathVariable("id") Long id, @RequestBody HorarioDTO horario) {
-        Horario horarioUpdated = serviceHorario.update(id, horario);
-        HorarioDTO response = mapper.toDto(horarioUpdated);
-
-        return ResponseEntity.ok(response);
+    public ResponseEntity<HorarioResponse> updateHorario(@PathVariable("id") Long id, @Valid @RequestBody HorarioUpdateRequest request) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .location(URI.create("/horarios/" + id))
+                .body(horarioService.updateHorario(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<HorarioDTO> deleteHorarioById(@PathVariable("id") Long id) {
-        if (serviceHorario.delete(id)) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                    .location(URI.create("/horarios"))
-                    .build();
-        }
+    public ResponseEntity<Void> deleteHorario(@PathVariable("id") Long id) {
+        horarioService.deleteHorario(id);
+        return ResponseEntity.noContent().build();
+    }
 
-        return ResponseEntity.notFound().build();
+    @GetMapping("/{id}")
+    public ResponseEntity<HorarioResponse> getHorario(@PathVariable("id") Long id) {
+        return horarioService.getHorario(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
