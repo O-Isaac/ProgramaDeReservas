@@ -1,0 +1,301 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "Introduction to ProgramaDeReservas - a classroom reservation management system with JWT authentication, explaining its purpose, main features, and high-level architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Architecture",
+      "purpose": "High-level system architecture overview - layered design, component relationships, and key design patterns",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Layered Architecture",
+      "purpose": "Detailed explanation of the presentation (controllers), service, repository, and entity layers and their responsibilities",
+      "parent": "Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Domain Model",
+      "purpose": "Entity relationships and the star schema with Reserva at the center, cascade behaviors, and foreign key constraints",
+      "parent": "Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Technology Stack",
+      "purpose": "Spring Boot 3.5.6, Java 24, MySQL, JWT libraries, Lombok, MapStruct, and other dependencies",
+      "parent": "Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Core Domain Entities",
+      "purpose": "Overview of the four main JPA entities (Reserva, Aula, Horario, Usuario) and their relationships",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Reserva Entity",
+      "purpose": "The central reservation entity - fields, relationships, validation constraints, and lazy loading configuration",
+      "parent": "Core Domain Entities",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Aula Entity",
+      "purpose": "Classroom entity with capacity, computer availability, and one-to-many relationship with reservations",
+      "parent": "Core Domain Entities",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Horario Entity",
+      "purpose": "Time slot entity with day of week enum, start/end times, and cascade delete configuration",
+      "parent": "Core Domain Entities",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Usuario Entity",
+      "purpose": "User entity that implements Spring Security's UserDetails interface for JWT authentication",
+      "parent": "Core Domain Entities",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Business Logic Layer",
+      "purpose": "Service classes that implement core business rules, validation, and orchestrate operations",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "ServiceReserva",
+      "purpose": "Most critical service - reservation creation with date validation, capacity checks, and temporal overlap detection",
+      "parent": "Business Logic Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "ServiceAula",
+      "purpose": "Classroom management service with filtering by capacity threshold and computer availability",
+      "parent": "Business Logic Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "ServiceHorario",
+      "purpose": "Schedule management service for CRUD operations on time slots",
+      "parent": "Business Logic Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "ServiceUsuario",
+      "purpose": "User management service for registration, profile updates, and user queries",
+      "parent": "Business Logic Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "REST API",
+      "purpose": "RESTful controllers exposing HTTP endpoints for all resources with @CrossOrigin enabled",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Reservation API",
+      "purpose": "CRUD endpoints for reservations with @Valid validation and ReservaRequestDTO/ReservaResponseDTO",
+      "parent": "REST API",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Classroom API",
+      "purpose": "Classroom endpoints with optional filtering by capacity and ordenadores parameters",
+      "parent": "REST API",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Schedule API",
+      "purpose": "Time slot management endpoints with HorarioDTO for requests and responses",
+      "parent": "REST API",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "User API",
+      "purpose": "User management endpoints for administrators with UsuarioDTO responses",
+      "parent": "REST API",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Data Access Layer",
+      "purpose": "Spring Data JPA repositories with standard CRUD operations and custom query methods",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Repository Overview",
+      "purpose": "Explanation of Spring Data JPA repository pattern and automatic implementation generation",
+      "parent": "Data Access Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Custom Query Methods",
+      "purpose": "Focus on RepositoryReserva's existsSolapamiento overlap detection query and derived query methods",
+      "parent": "Data Access Layer",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Security and Authentication",
+      "purpose": "JWT-based stateless authentication with OAuth2 Resource Server and role-based authorization",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Security Configuration",
+      "purpose": "SecurityConfig with JWT decoder, authentication converter, password encoder, and filter chain",
+      "parent": "Security and Authentication",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Authentication Flow",
+      "purpose": "Login, registration, profile retrieval, and password change endpoints with LoginRequest/RegisterRequest DTOs",
+      "parent": "Security and Authentication",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "User Roles and Authorization",
+      "purpose": "ROLE_ADMIN and ROLE_PROFESOR roles extracted from JWT claims without prefix",
+      "parent": "Security and Authentication",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Data Transfer and Validation",
+      "purpose": "DTOs for API contracts, MapStruct mappers for transformations, and Jakarta Bean Validation",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Data Transfer Objects",
+      "purpose": "Request/Response DTOs for reservations, classrooms, schedules, users, and authentication",
+      "parent": "Data Transfer and Validation",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "MapStruct Mappers",
+      "purpose": "Entity-DTO bidirectional conversion using MapStruct with custom mappings and null handling strategies",
+      "parent": "Data Transfer and Validation",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
