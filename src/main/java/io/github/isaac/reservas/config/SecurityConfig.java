@@ -39,7 +39,7 @@ public class SecurityConfig {
         http
                 // Deshabilitar CSRF (no necesario en APIs REST con JWT)
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 // Configurar autorización de peticiones HTTP
                 // Define qué rutas son públicas y cuáles requieren autenticación
                 .authorizeHttpRequests(auth -> auth

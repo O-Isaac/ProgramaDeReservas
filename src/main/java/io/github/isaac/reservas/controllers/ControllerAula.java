@@ -22,7 +22,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/aulas")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Aulas", description = "Operaciones CRUD para la gestión de aulas")
 @SecurityRequirement(name = "bearer-jwt")
 public class ControllerAula {

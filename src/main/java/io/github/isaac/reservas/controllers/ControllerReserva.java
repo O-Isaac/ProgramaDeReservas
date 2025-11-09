@@ -22,7 +22,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/reservas")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Reservas", description = "Operaciones CRUD para la gestión de reservas")
 @SecurityRequirement(name = "bearer-jwt")
 public class ControllerReserva {

@@ -23,7 +23,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/horarios")
 @AllArgsConstructor
-@CrossOrigin(origins = "*")
 @Tag(name = "Horarios", description = "Operaciones CRUD para la gestión de horarios")
 @SecurityRequirement(name = "bearer-jwt")
 public class ControllerHorario {

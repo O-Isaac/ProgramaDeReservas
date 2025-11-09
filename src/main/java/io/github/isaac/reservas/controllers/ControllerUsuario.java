@@ -21,7 +21,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
-@CrossOrigin(origins = "*")
 @AllArgsConstructor
 @Tag(name = "Usuarios", description = "Operaciones CRUD para la gestión de usuarios")
 public class ControllerUsuario {

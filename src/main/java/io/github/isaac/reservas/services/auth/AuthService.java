@@ -48,6 +48,7 @@ public class AuthService {
 
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        usuario.setNombre(request.getNombre());
         usuario.setRoles("ROLE_PROFESOR");
         usuario.setEnabled(true);
 

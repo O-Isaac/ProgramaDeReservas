@@ -17,6 +17,7 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         // Define esquema de seguridad Bearer JWT
         final String securitySchemeName = "bearer-jwt";
+
         SecurityScheme bearerAuth = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
