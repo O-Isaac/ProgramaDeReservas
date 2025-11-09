@@ -1,25 +1,30 @@
 {
   "repo_notes": [
     {
-      "content": ""
+      "content": "",
+      "author": "O-Isaac"
     }
   ],
   "pages": [
     {
       "title": "Overview",
       "purpose": "Introduction to ProgramaDeReservas - a classroom reservation management system with JWT authentication, explaining its purpose, main features, and high-level architecture",
+      "parent": null,
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
     {
       "title": "Architecture",
       "purpose": "High-level system architecture overview - layered design, component relationships, and key design patterns",
+      "parent": null,
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -29,7 +34,8 @@
       "parent": "Architecture",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -39,7 +45,8 @@
       "parent": "Architecture",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -49,16 +56,19 @@
       "parent": "Architecture",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
     {
       "title": "Core Domain Entities",
       "purpose": "Overview of the four main JPA entities (Reserva, Aula, Horario, Usuario) and their relationships",
+      "parent": null,
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -68,7 +78,8 @@
       "parent": "Core Domain Entities",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -78,7 +89,8 @@
       "parent": "Core Domain Entities",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -88,7 +100,8 @@
       "parent": "Core Domain Entities",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -98,16 +111,19 @@
       "parent": "Core Domain Entities",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
     {
       "title": "Business Logic Layer",
       "purpose": "Service classes that implement core business rules, validation, and orchestrate operations",
+      "parent": null,
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -117,7 +133,8 @@
       "parent": "Business Logic Layer",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -127,7 +144,8 @@
       "parent": "Business Logic Layer",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -137,7 +155,8 @@
       "parent": "Business Logic Layer",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -147,16 +166,19 @@
       "parent": "Business Logic Layer",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
     {
       "title": "REST API",
       "purpose": "RESTful controllers exposing HTTP endpoints for all resources with @CrossOrigin enabled",
+      "parent": null,
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -166,7 +188,8 @@
       "parent": "REST API",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -176,7 +199,8 @@
       "parent": "REST API",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -186,7 +210,8 @@
       "parent": "REST API",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -196,16 +221,19 @@
       "parent": "REST API",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
     {
       "title": "Data Access Layer",
       "purpose": "Spring Data JPA repositories with standard CRUD operations and custom query methods",
+      "parent": null,
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -215,7 +243,8 @@
       "parent": "Data Access Layer",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -225,16 +254,19 @@
       "parent": "Data Access Layer",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
     {
       "title": "Security and Authentication",
       "purpose": "JWT-based stateless authentication with OAuth2 Resource Server and role-based authorization",
+      "parent": null,
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -244,7 +276,8 @@
       "parent": "Security and Authentication",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -254,7 +287,8 @@
       "parent": "Security and Authentication",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -264,16 +298,19 @@
       "parent": "Security and Authentication",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
     {
       "title": "Data Transfer and Validation",
       "purpose": "DTOs for API contracts, MapStruct mappers for transformations, and Jakarta Bean Validation",
+      "parent": null,
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -283,7 +320,8 @@
       "parent": "Data Transfer and Validation",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     },
@@ -293,7 +331,8 @@
       "parent": "Data Transfer and Validation",
       "page_notes": [
         {
-          "content": ""
+          "content": "",
+          "author": null
         }
       ]
     }
