@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -29,6 +30,7 @@ public class ControllerHorario {
     private final HorarioService horarioService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Listar horarios", description = "Obtiene el listado completo de horarios")
     @ApiResponses({ @ApiResponse(responseCode = "200", description = "OK") })
     public ResponseEntity<List<HorarioResponse>> findAll() {
@@ -36,6 +38,7 @@ public class ControllerHorario {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Crear horario", description = "Crea un nuevo horario")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Creado"),
@@ -48,6 +51,7 @@ public class ControllerHorario {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Actualizar horario", description = "Actualiza parcialmente un horario existente. Los campos nulos se ignoran")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Actualizado"),
@@ -62,6 +66,7 @@ public class ControllerHorario {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar horario", description = "Elimina un horario por su ID")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Eliminado"),
@@ -74,6 +79,7 @@ public class ControllerHorario {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Obtener horario", description = "Obtiene un horario por su ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Encontrado"),

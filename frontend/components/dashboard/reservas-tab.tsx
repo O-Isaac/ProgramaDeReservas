@@ -9,6 +9,7 @@ import {
   getUsuarios,
   getAulas,
 } from "@/lib/api-client";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import HorarioSelector from "./horario-selector";
@@ -36,13 +37,13 @@ interface Aula {
 }
 
 export default function ReservasTab() {
+  const { can } = usePermissions();
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [aulas, setAulas] = useState<Aula[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  const [formStep, setFormStep] = useState(1); // Step 1: Aula, Step 2: Fecha, Step 3: Horario, Step 4: Submit
   const [formData, setFormData] = useState({
     usuarioId: "",
     aulaId: "",
@@ -94,7 +95,6 @@ export default function ReservasTab() {
         motivo: "",
         asistentes: 1,
       });
-      setFormStep(1);
       setShowForm(false);
       fetchData();
     } catch (err) {
@@ -132,12 +132,14 @@ export default function ReservasTab() {
             Gestiona todas las reservas de aulas
           </p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2">
-          {showForm ? "Cancelar" : "+ Nueva Reserva"}
-        </Button>
+        {can.createReserva && (
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+            {showForm ? "Cancelar" : "+ Nueva Reserva"}
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && can.createReserva && (
         <Card className="border-2">
           <CardHeader>
             <CardTitle>Crear Nueva Reserva</CardTitle>
@@ -309,7 +311,6 @@ export default function ReservasTab() {
                   variant="outline"
                   onClick={() => {
                     setShowForm(false);
-                    setFormStep(1);
                     setFormData({
                       usuarioId: "",
                       aulaId: "",
@@ -364,14 +365,16 @@ export default function ReservasTab() {
                                 {reserva.usuario.nombre}
                               </p>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(reserva.id)}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            {can.deleteReserva && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(reserva.id)}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
                           <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">

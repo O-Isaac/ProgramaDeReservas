@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { getReservas, getAulas, getHorarios, getUsuarios } from "@/lib/api-client"
+import { usePermissions } from "@/hooks/use-permissions"
 import { Card } from "@/components/ui/card"
 import { Calendar, BookOpen, Clock, Users } from "lucide-react"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 export default function DashboardOverview() {
+  const { can } = usePermissions()
   const [data, setData] = useState({
     totalReservas: 0,
     totalAulas: 0,
@@ -21,12 +23,20 @@ export default function DashboardOverview() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [reservas, aulas, horarios, usuarios] = await Promise.all([
+        // Cargar datos según permisos
+        const promises: Promise<any>[] = [
           getReservas(),
           getAulas(),
           getHorarios(),
-          getUsuarios(),
-        ])
+        ]
+
+        // Solo cargar usuarios si tiene permiso
+        if (can.viewUsuarios) {
+          promises.push(getUsuarios())
+        }
+
+        const results = await Promise.all(promises)
+        const [reservas, aulas, horarios, usuarios] = results
 
         const reservasByAulaData = aulas.map((aula: any) => ({
           name: aula.nombre,
@@ -57,7 +67,7 @@ export default function DashboardOverview() {
           totalReservas: Array.isArray(reservas) ? reservas.length : 0,
           totalAulas: Array.isArray(aulas) ? aulas.length : 0,
           totalHorarios: Array.isArray(horarios) ? horarios.length : 0,
-          totalUsuarios: Array.isArray(usuarios) ? usuarios.length : 0,
+          totalUsuarios: can.viewUsuarios && Array.isArray(usuarios) ? usuarios.length : 0,
           reservasProximas,
           reservasByAula: reservasByAulaData,
           reservasByDay: reservasByDayData,
@@ -70,13 +80,13 @@ export default function DashboardOverview() {
     }
 
     loadData()
-  }, [])
+  }, [can.viewUsuarios])
 
   const stats = [
-    { label: "Reservas Totales", value: data.totalReservas, icon: Calendar, color: "bg-blue-100 text-blue-600" },
-    { label: "Aulas", value: data.totalAulas, icon: BookOpen, color: "bg-green-100 text-green-600" },
-    { label: "Horarios", value: data.totalHorarios, icon: Clock, color: "bg-orange-100 text-orange-600" },
-    { label: "Usuarios", value: data.totalUsuarios, icon: Users, color: "bg-purple-100 text-purple-600" },
+    { label: "Reservas Totales", value: data.totalReservas, icon: Calendar, color: "bg-blue-100 text-blue-600", visible: true },
+    { label: "Aulas", value: data.totalAulas, icon: BookOpen, color: "bg-green-100 text-green-600", visible: true },
+    { label: "Horarios", value: data.totalHorarios, icon: Clock, color: "bg-orange-100 text-orange-600", visible: true },
+    { label: "Usuarios", value: data.totalUsuarios, icon: Users, color: "bg-purple-100 text-purple-600", visible: can.viewUsuarios },
   ]
 
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
@@ -89,7 +99,7 @@ export default function DashboardOverview() {
     <div className="space-y-8">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => {
+        {stats.filter(stat => stat.visible).map((stat) => {
           const Icon = stat.icon
           return (
             <Card key={stat.label} className="p-6">

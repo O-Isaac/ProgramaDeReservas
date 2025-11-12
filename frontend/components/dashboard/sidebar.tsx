@@ -1,6 +1,7 @@
 "use client"
 
 import { useAuth } from "@/context/auth-context"
+import { usePermissions } from "@/hooks/use-permissions"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { LogOut, Users, BookOpen, Clock, Calendar, BarChart3 } from "lucide-react"
@@ -14,13 +15,16 @@ interface SidebarProps {
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const { logout, userEmail, userRoles } = useAuth()
+  const { can } = usePermissions()
   const router = useRouter()
   const [stats, setStats] = useState({ reservas: 0, aulas: 0, horarios: 0 })
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [reservas, aulas, horarios] = await Promise.all([getReservas(), getAulas(), getHorarios()])
+        const promises: Promise<any>[] = [getReservas(), getAulas(), getHorarios()]
+
+        const [reservas, aulas, horarios] = await Promise.all(promises)
         setStats({
           reservas: Array.isArray(reservas) ? reservas.length : 0,
           aulas: Array.isArray(aulas) ? aulas.length : 0,
@@ -39,11 +43,11 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   }
 
   const tabs = [
-    { id: "dashboard", label: "Panel", icon: BarChart3 },
-    { id: "usuarios", label: "Usuarios", icon: Users },
-    { id: "aulas", label: "Aulas", icon: BookOpen },
-    { id: "horarios", label: "Horarios", icon: Clock },
-    { id: "reservas", label: "Reservas", icon: Calendar },
+    { id: "dashboard", label: "Panel", icon: BarChart3, visible: true },
+    { id: "usuarios", label: "Usuarios", icon: Users, visible: can.viewUsuarios },
+    { id: "aulas", label: "Aulas", icon: BookOpen, visible: can.viewAulas },
+    { id: "horarios", label: "Horarios", icon: Clock, visible: can.viewHorarios },
+    { id: "reservas", label: "Reservas", icon: Calendar, visible: can.viewReservas },
   ]
 
   const formatRoleName = (role: string): string => {
@@ -92,7 +96,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
-        {tabs.map((tab) => {
+        {tabs.filter((tab) => tab.visible).map((tab) => {
           const Icon = tab.icon
           return (
             <button

@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { getUsuarios, createUsuario, deleteUsuario, getReservas } from "@/lib/api-client"
+import { usePermissions } from "@/hooks/use-permissions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mail, Calendar, CheckCircle } from "lucide-react"
@@ -16,6 +17,7 @@ interface Usuario {
 }
 
 export default function UsuariosTab() {
+  const { can } = usePermissions()
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [reservas, setReservas] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -77,12 +79,14 @@ export default function UsuariosTab() {
           <h2 className="text-2xl font-bold">Usuarios</h2>
           <p className="text-sm text-muted-foreground mt-1">Gestiona los usuarios del sistema</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2">
-          {showForm ? "Cancelar" : "+ Nuevo Usuario"}
-        </Button>
+        {can.createUsuario && (
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+            {showForm ? "Cancelar" : "+ Nuevo Usuario"}
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && can.createUsuario && (
         <Card className="border-2">
           <CardHeader>
             <CardTitle>Crear Nuevo Usuario</CardTitle>
@@ -154,9 +158,11 @@ export default function UsuariosTab() {
                     </div>
                   </div>
 
-                  <Button variant="destructive" onClick={() => handleDelete(usuario.id)} className="w-full">
-                    Eliminar
-                  </Button>
+                  {can.deleteUsuario && (
+                    <Button variant="destructive" onClick={() => handleDelete(usuario.id)} className="w-full">
+                      Eliminar
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -29,6 +30,7 @@ public class ControllerAula {
     private final AulaService aulaService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Listar aulas", description = "Obtiene el listado completo de aulas incluyendo reservas enlazadas (si las hubiera)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Listado recuperado correctamente")
@@ -38,6 +40,7 @@ public class ControllerAula {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Crear aula", description = "Crea una nueva aula")
     @ApiResponses({
             @ApiResponse(responseCode = "303", description = "Creada y redirigido (SEE_OTHER) a /aulas"),
@@ -50,6 +53,7 @@ public class ControllerAula {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Actualizar aula", description = "Actualiza parcialmente un aula existente. Los campos nulos se ignoran")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Actualizada correctamente (NO_CONTENT con body mapeado)"),
@@ -64,6 +68,7 @@ public class ControllerAula {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar aula", description = "Elimina un aula por su ID")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Eliminada"),
@@ -76,6 +81,7 @@ public class ControllerAula {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Obtener aula", description = "Obtiene los datos de un aula por su ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Encontrada"),

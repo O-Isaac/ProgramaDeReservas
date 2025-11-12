@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { getAulas, createAula, deleteAula, getReservas } from "@/lib/api-client"
+import { usePermissions } from "@/hooks/use-permissions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Laptop, Calendar } from "lucide-react"
@@ -16,6 +17,7 @@ interface Aula {
 }
 
 export default function AulasTab() {
+  const { can } = usePermissions()
   const [aulas, setAulas] = useState<Aula[]>([])
   const [reservas, setReservas] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -77,12 +79,14 @@ export default function AulasTab() {
           <h2 className="text-2xl font-bold">Aulas</h2>
           <p className="text-sm text-muted-foreground mt-1">Gestiona las aulas disponibles</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2">
-          {showForm ? "Cancelar" : "+ Nueva Aula"}
-        </Button>
+        {can.createAula && (
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+            {showForm ? "Cancelar" : "+ Nueva Aula"}
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && can.createAula && (
         <Card className="border-2">
           <CardHeader>
             <CardTitle>Crear Nueva Aula</CardTitle>
@@ -159,9 +163,11 @@ export default function AulasTab() {
                       <p className="text-xs text-muted-foreground">Ord.</p>
                     </div>
                   </div>
-                  <Button variant="destructive" onClick={() => handleDelete(aula.id)} className="w-full">
-                    Eliminar
-                  </Button>
+                  {can.deleteAula && (
+                    <Button variant="destructive" onClick={() => handleDelete(aula.id)} className="w-full">
+                      Eliminar
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

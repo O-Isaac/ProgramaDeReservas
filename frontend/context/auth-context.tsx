@@ -53,12 +53,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(newToken)
     setTokenState(newToken)
     const decoded = decodeJWT(newToken)
+
     if (decoded?.sub) {
       setUserEmail(decoded.sub)
     }
-    if (decoded?.authorities) {
-      const roles = extractRoles(decoded.authorities)
-      setUserRoles(roles)
+
+    if (decoded?.roles) {
+      setUserRoles([decoded.roles])
     }
   }
 
@@ -79,6 +80,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
+  if (context?.token) {
+    const decoded = decodeJWT(context.token);
+    console.log(decoded)
+  }
   if (!context) {
     throw new Error("useAuth must be used within AuthProvider")
   }

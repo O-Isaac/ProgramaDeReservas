@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { getHorarios, createHorario, deleteHorario, getReservas } from "@/lib/api-client"
+import { usePermissions } from "@/hooks/use-permissions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Clock, Calendar } from "lucide-react"
@@ -18,6 +19,7 @@ interface Horario {
 }
 
 export default function HorariosTab() {
+  const { can } = usePermissions()
   const [horarios, setHorarios] = useState<Horario[]>([])
   const [reservas, setReservas] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -98,12 +100,14 @@ export default function HorariosTab() {
           <h2 className="text-2xl font-bold">Horarios</h2>
           <p className="text-sm text-muted-foreground mt-1">Gestiona los horarios disponibles</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2">
-          {showForm ? "Cancelar" : "+ Nuevo Horario"}
-        </Button>
+        {can.createHorario && (
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+            {showForm ? "Cancelar" : "+ Nuevo Horario"}
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && can.createHorario && (
         <Card className="border-2">
           <CardHeader>
             <CardTitle>Crear Nuevo Horario</CardTitle>
@@ -209,9 +213,11 @@ export default function HorariosTab() {
                             </div>
                           </div>
 
-                          <Button variant="destructive" onClick={() => handleDelete(horario.id)} className="w-full">
-                            Eliminar
-                          </Button>
+                          {can.deleteHorario && (
+                            <Button variant="destructive" onClick={() => handleDelete(horario.id)} className="w-full">
+                              Eliminar
+                            </Button>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

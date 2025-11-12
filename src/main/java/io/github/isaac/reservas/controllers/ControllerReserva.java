@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -29,6 +30,7 @@ public class ControllerReserva {
     private final ReservaService reservaService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Listar reservas", description = "Obtiene todas las reservas")
     @ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
     public ResponseEntity<List<ReservaResponse>> getReservas() {
@@ -36,6 +38,7 @@ public class ControllerReserva {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Crear reserva", description = "Crea una nueva reserva validando solapamientos y capacidad")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Creada"),
@@ -49,6 +52,7 @@ public class ControllerReserva {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Actualizar reserva", description = "Actualiza parcialmente una reserva y vuelve a validar solapamientos y capacidad")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Actualizada"),
@@ -63,6 +67,7 @@ public class ControllerReserva {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Eliminar reserva", description = "Elimina una reserva por ID")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Eliminada"),
@@ -75,6 +80,7 @@ public class ControllerReserva {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PROFESOR', 'ADMIN')")
     @Operation(summary = "Obtener reserva", description = "Obtiene una reserva por su ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Encontrada"),

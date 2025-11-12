@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -23,11 +24,13 @@ import java.util.List;
 @RequestMapping("/usuarios")
 @AllArgsConstructor
 @Tag(name = "Usuarios", description = "Operaciones CRUD para la gestión de usuarios")
+@SecurityRequirement(name = "bearer-jwt")
 public class ControllerUsuario {
 
     private UsuarioService usuarioService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Listar usuarios", description = "Obtiene todos los usuarios")
     @ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
     public ResponseEntity<List<UsuarioResponse>> getUsuarios() {
@@ -35,6 +38,7 @@ public class ControllerUsuario {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Crear usuario", description = "Crea un nuevo usuario con rol por defecto ROLE_PROFESOR")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Creado"),
@@ -46,6 +50,7 @@ public class ControllerUsuario {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Actualizar usuario", description = "Actualiza parcialmente un usuario. Campos nulos se ignoran")
     @ApiResponses({
             @ApiResponse(responseCode = "303", description = "Actualizado - SEE_OTHER"),
@@ -60,6 +65,7 @@ public class ControllerUsuario {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar usuario", description = "Elimina un usuario por ID")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Eliminado"),
@@ -72,6 +78,7 @@ public class ControllerUsuario {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Obtener usuario", description = "Obtiene un usuario por su ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Encontrado"),
