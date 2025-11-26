@@ -20,10 +20,7 @@ frontend/node_modules
 frontend/.next
 frontend/.pnpm-store
 
-# Docker
-docker-compose*.yml
-Dockerfile*
-.dockerignore
+# Docker (keep Dockerfiles available for debugging if needed)
 
 # Documentation
 README.md
