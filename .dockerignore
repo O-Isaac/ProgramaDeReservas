@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.log
+
+# Node
+frontend/node_modules
+frontend/.next
+frontend/.pnpm-store
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Documentation
+README.md
+*.md
+!frontend/README.md
+
+# Environment files
+.env*
+*.env
+
+# Build artifacts
+dist/
+build/
+
+# IDE specific
+.devin
