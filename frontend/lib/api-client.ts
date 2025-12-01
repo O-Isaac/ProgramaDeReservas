@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = "https://programadereservas.onrender.com";
 
 export interface AuthResponse {
   token: string;
