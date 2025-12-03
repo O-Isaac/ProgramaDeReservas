@@ -38,11 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (savedToken) {
       setTokenState(savedToken)
       const decoded = decodeJWT(savedToken)
+      console.log("Token decodificado al recargar:", decoded)
       if (decoded?.sub) {
         setUserEmail(decoded.sub)
       }
       if (decoded?.authorities) {
         const roles = extractRoles(decoded.authorities)
+        console.log("Roles extraídos al recargar:", roles)
         setUserRoles(roles)
       }
     }
@@ -53,13 +55,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(newToken)
     setTokenState(newToken)
     const decoded = decodeJWT(newToken)
+    console.log("Token decodificado al login:", decoded)
 
     if (decoded?.sub) {
       setUserEmail(decoded.sub)
     }
 
-    if (decoded?.roles) {
-      setUserRoles([decoded.roles])
+    if (decoded?.authorities) {
+      const roles = extractRoles(decoded.authorities)
+      console.log("Roles extraídos al login:", roles)
+      setUserRoles(roles)
     }
   }
 
