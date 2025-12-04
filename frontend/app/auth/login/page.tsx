@@ -25,7 +25,7 @@ export default function LoginPage() {
 
     try {
       const token = await login(email, password)
-      authLogin(token)
+      await authLogin(token)
       router.push("/dashboard")
     } catch (err: any) {
       setError("Credenciales inválidas")

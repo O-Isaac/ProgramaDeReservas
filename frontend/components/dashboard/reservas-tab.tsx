@@ -9,6 +9,7 @@ import {
   getUsuarios,
   getAulas,
 } from "@/lib/api-client";
+import { useAuth } from "@/context/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +38,8 @@ interface Aula {
 }
 
 export default function ReservasTab() {
-  const { can } = usePermissions();
+  const { user } = useAuth();
+  const { can, isAdmin } = usePermissions();
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [aulas, setAulas] = useState<Aula[]>([]);
@@ -60,14 +62,17 @@ export default function ReservasTab() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [res, usu, aul] = await Promise.all([
-        getReservas(),
-        getUsuarios(),
-        getAulas(),
-      ]);
-      setReservas(res);
-      setUsuarios(usu);
-      setAulas(aul);
+      const promises = [getReservas(), getAulas()];
+      // Solo cargar usuarios si es admin (para poder ver todas las reservas)
+      if (isAdmin) {
+        promises.push(getUsuarios());
+      }
+      const results = await Promise.all(promises);
+      setReservas(results[0]);
+      setAulas(results[1]);
+      if (isAdmin && results[2]) {
+        setUsuarios(results[2]);
+      }
     } catch (err) {
       console.error("Error fetching data:", err);
     } finally {
@@ -79,8 +84,18 @@ export default function ReservasTab() {
     e.preventDefault();
     try {
       const apiDate = convertToApiDate(formData.fecha);
+      // Usar el ID del usuario logueado, o el seleccionado si es admin
+      const usuarioId = isAdmin && formData.usuarioId 
+        ? Number.parseInt(formData.usuarioId) 
+        : user?.id || 0;
+      
+      if (!usuarioId) {
+        console.error("No se pudo obtener el ID del usuario");
+        return;
+      }
+
       await createReserva({
-        usuarioId: Number.parseInt(formData.usuarioId),
+        usuarioId: usuarioId,
         aulaId: Number.parseInt(formData.aulaId),
         horarioId: Number.parseInt(formData.horarioId),
         fecha: apiDate,
@@ -113,7 +128,7 @@ export default function ReservasTab() {
     }
   };
 
-  const canProceedToStep2 = !!formData.usuarioId && !!formData.aulaId;
+  const canProceedToStep2 = (isAdmin ? !!formData.usuarioId : true) && !!formData.aulaId;
   const canProceedToStep3 = canProceedToStep2 && !!formData.fecha;
   const canSubmit =
     canProceedToStep3 && !!formData.horarioId && !!formData.motivo;
@@ -151,29 +166,39 @@ export default function ReservasTab() {
                   <span className="flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-xs">
                     1
                   </span>
-                  Selecciona Usuario y Aula
+                  {isAdmin ? "Selecciona Usuario y Aula" : "Selecciona Aula"}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-8">
-                  <div>
-                    <label className="text-xs font-medium block mb-2">
-                      Usuario *
-                    </label>
-                    <select
-                      value={formData.usuarioId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, usuarioId: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-input rounded-md bg-background"
-                      required
-                    >
-                      <option value="">Selecciona Usuario</option>
-                      {usuarios.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.nombre}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <div className={`grid grid-cols-1 ${isAdmin ? 'md:grid-cols-2' : ''} gap-4 pl-8`}>
+                  {isAdmin && (
+                    <div>
+                      <label className="text-xs font-medium block mb-2">
+                        Usuario *
+                      </label>
+                      <select
+                        value={formData.usuarioId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, usuarioId: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                        required
+                      >
+                        <option value="">Selecciona Usuario</option>
+                        {usuarios.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {!isAdmin && (
+                    <div className="bg-muted/50 rounded-lg p-3 mb-4">
+                      <p className="text-sm text-muted-foreground">
+                        Reservando como: <span className="font-semibold text-foreground">{user?.nombre || user?.email}</span>
+                      </p>
+                    </div>
+                  )}
 
                   <div>
                     <label className="text-xs font-medium block mb-2">

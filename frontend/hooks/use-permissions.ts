@@ -3,10 +3,18 @@ import { useAuth } from "@/context/auth-context"
 export function usePermissions() {
   const { userRoles } = useAuth()
 
-  console.log(userRoles)
+  console.log("Roles del usuario en usePermissions:", userRoles)
 
   const hasRole = (role: string): boolean => {
-    return userRoles.some((r) => r === role || r === `ROLE_${role}`)
+    // Buscar tanto el rol con prefijo como sin prefijo
+    return userRoles.some((r) => {
+      if (!r || typeof r !== 'string') return false
+      const normalizedRole = r.toUpperCase()
+      const searchRole = role.toUpperCase()
+      return normalizedRole === searchRole || 
+             normalizedRole === `ROLE_${searchRole}` ||
+             normalizedRole.replace("ROLE_", "") === searchRole
+    })
   }
 
   const hasAnyRole = (...roles: string[]): boolean => {
@@ -15,6 +23,8 @@ export function usePermissions() {
 
   const isAdmin = hasRole("ADMIN")
   const isProfesor = hasRole("PROFESOR")
+
+  console.log("Permisos calculados:", { isAdmin, isProfesor, userRoles })
 
   // Permisos específicos basados en los endpoints del backend
   const can = {
@@ -45,4 +55,3 @@ export function usePermissions() {
 
   return { can, isAdmin, isProfesor, hasRole, hasAnyRole }
 }
-

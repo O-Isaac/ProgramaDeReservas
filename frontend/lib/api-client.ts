@@ -1,6 +1,45 @@
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
 
 const API_BASE_URL = "https://programadereservas.onrender.com";
+
+// Create axios instance
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Request interceptor to add JWT token
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<{ message?: string }>) => {
+    const message = error.response?.data?.message;
+    if (message) {
+      toast.error(message);
+    } else if (error.response) {
+      toast.error(`Error ${error.response.status}: ${error.response.statusText}`);
+    } else {
+      toast.error("Error de conexión");
+    }
+    return Promise.reject(error);
+  }
+);
 
 export interface AuthResponse {
   token: string;
@@ -35,57 +74,37 @@ export const removeToken = (): void => {
   localStorage.removeItem("jwt_token");
 };
 
-// API call helper with JWT
-async function apiCall(
-  endpoint: string,
-  options: RequestInit = {},
-  requiresAuth = true
-): Promise<any> {
-  const headers = new Headers(options.headers);
-  if (!headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
+// Auth endpoints - NO JWT required (usando axios sin interceptor)
+const authClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-  if (requiresAuth) {
-    const token = getToken();
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
-    }
-  }
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const { message } = await response.json();
+// Add error handling to auth client too
+authClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<{ message?: string }>) => {
+    const message = error.response?.data?.message;
     if (message) {
-      return toast.error(`${message}`);
+      toast.error(message);
+    } else if (error.response) {
+      toast.error(`Error ${error.response.status}: ${error.response.statusText}`);
     } else {
-      return toast.error(`Error ${response.status}: ${response.statusText}`);
+      toast.error("Error de conexión");
     }
+    return Promise.reject(error);
   }
+);
 
-  const contentType = response.headers.get("content-type");
-  if (contentType && contentType.includes("application/json")) {
-    return response.json();
-  }
-  return response.text();
-}
-
-// Auth endpoints - NO JWT required
 export async function login(email: string, password: string): Promise<string> {
-  const response = await apiCall(
-    "/auth/login",
-    {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    },
-    false
-  );
-  console.log("[v0] Login response:", response);
-  return response.token;
+  const { data } = await authClient.post<AuthResponse>("/auth/login", {
+    email,
+    password,
+  });
+  console.log("[v0] Login response:", data);
+  return data.token;
 }
 
 export async function register(
@@ -93,38 +112,40 @@ export async function register(
   email: string,
   password: string
 ): Promise<any> {
-  return apiCall(
-    "/auth/register",
-    {
-      method: "POST",
-      body: JSON.stringify({ nombre, email, password }),
-    },
-    false
-  );
+  const { data } = await authClient.post("/auth/register", {
+    nombre,
+    email,
+    password,
+  });
+  return data;
 }
 
 // Auth endpoints - JWT required
 export async function getPerfil(): Promise<any> {
-  return apiCall("/auth/perfil", { method: "GET" });
+  const { data } = await apiClient.get("/auth/perfil");
+  return data;
 }
 
 export async function changePassword(
   oldPassword: string,
   newPassword: string
 ): Promise<any> {
-  return apiCall("/auth/cambiar-pass", {
-    method: "PATCH",
-    body: JSON.stringify({ oldPassword, newPassword }),
+  const { data } = await apiClient.patch("/auth/cambiar-pass", {
+    oldPassword,
+    newPassword,
   });
+  return data;
 }
 
-// Usuarios endpoints - All endpoints now require JWT token (removed requiresAuth = false)
+// Usuarios endpoints
 export async function getUsuarios(): Promise<any[]> {
-  return apiCall("/usuarios", { method: "GET" });
+  const { data } = await apiClient.get("/usuarios");
+  return data;
 }
 
 export async function getUsuario(id: number): Promise<any> {
-  return apiCall(`/usuarios/${id}`, { method: "GET" });
+  const { data } = await apiClient.get(`/usuarios/${id}`);
+  return data;
 }
 
 export async function createUsuario(
@@ -132,30 +153,32 @@ export async function createUsuario(
   email: string,
   password: string
 ): Promise<any> {
-  return apiCall("/usuarios", {
-    method: "POST",
-    body: JSON.stringify({ nombre, email, password }),
+  const { data } = await apiClient.post("/usuarios", {
+    nombre,
+    email,
+    password,
   });
+  return data;
 }
 
-export async function updateUsuario(id: number, data: any): Promise<any> {
-  return apiCall(`/usuarios/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
+export async function updateUsuario(id: number, userData: any): Promise<any> {
+  const { data } = await apiClient.put(`/usuarios/${id}`, userData);
+  return data;
 }
 
 export async function deleteUsuario(id: number): Promise<void> {
-  return apiCall(`/usuarios/${id}`, { method: "DELETE" });
+  await apiClient.delete(`/usuarios/${id}`);
 }
 
-// Aulas endpoints - All endpoints now require JWT token
+// Aulas endpoints
 export async function getAulas(): Promise<any[]> {
-  return apiCall("/aulas", { method: "GET" });
+  const { data } = await apiClient.get("/aulas");
+  return data;
 }
 
 export async function getAula(id: number): Promise<any> {
-  return apiCall(`/aulas/${id}`, { method: "GET" });
+  const { data } = await apiClient.get(`/aulas/${id}`);
+  return data;
 }
 
 export async function createAula(
@@ -163,73 +186,69 @@ export async function createAula(
   capacidad: number,
   ordenadores: boolean
 ): Promise<any> {
-  return apiCall("/aulas", {
-    method: "POST",
-    body: JSON.stringify({ nombre, capacidad, ordenadores }),
+  const { data } = await apiClient.post("/aulas", {
+    nombre,
+    capacidad,
+    ordenadores,
   });
+  return data;
 }
 
-export async function updateAula(id: number, data: any): Promise<any> {
-  return apiCall(`/aulas/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
+export async function updateAula(id: number, aulaData: any): Promise<any> {
+  const { data } = await apiClient.put(`/aulas/${id}`, aulaData);
+  return data;
 }
 
 export async function deleteAula(id: number): Promise<void> {
-  return apiCall(`/aulas/${id}`, { method: "DELETE" });
+  await apiClient.delete(`/aulas/${id}`);
 }
 
-// Horarios endpoints - All endpoints now require JWT token
+// Horarios endpoints
 export async function getHorarios(): Promise<any[]> {
-  return apiCall("/horarios", { method: "GET" });
+  const { data } = await apiClient.get("/horarios");
+  return data;
 }
 
 export async function getHorario(id: number): Promise<any> {
-  return apiCall(`/horarios/${id}`, { method: "GET" });
+  const { data } = await apiClient.get(`/horarios/${id}`);
+  return data;
 }
 
-export async function createHorario(data: any): Promise<any> {
-  return apiCall("/horarios", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+export async function createHorario(horarioData: any): Promise<any> {
+  const { data } = await apiClient.post("/horarios", horarioData);
+  return data;
 }
 
-export async function updateHorario(id: number, data: any): Promise<any> {
-  return apiCall(`/horarios/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
+export async function updateHorario(id: number, horarioData: any): Promise<any> {
+  const { data } = await apiClient.put(`/horarios/${id}`, horarioData);
+  return data;
 }
 
 export async function deleteHorario(id: number): Promise<void> {
-  return apiCall(`/horarios/${id}`, { method: "DELETE" });
+  await apiClient.delete(`/horarios/${id}`);
 }
 
-// Reservas endpoints - All endpoints now require JWT token
+// Reservas endpoints
 export async function getReservas(): Promise<any[]> {
-  return apiCall("/reservas", { method: "GET" });
+  const { data } = await apiClient.get("/reservas");
+  return data;
 }
 
 export async function getReserva(id: number): Promise<any> {
-  return apiCall(`/reservas/${id}`, { method: "GET" });
+  const { data } = await apiClient.get(`/reservas/${id}`);
+  return data;
 }
 
-export async function createReserva(data: any): Promise<any> {
-  return apiCall("/reservas", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+export async function createReserva(reservaData: any): Promise<any> {
+  const { data } = await apiClient.post("/reservas", reservaData);
+  return data;
 }
 
-export async function updateReserva(id: number, data: any): Promise<any> {
-  return apiCall(`/reservas/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
+export async function updateReserva(id: number, reservaData: any): Promise<any> {
+  const { data } = await apiClient.put(`/reservas/${id}`, reservaData);
+  return data;
 }
 
 export async function deleteReserva(id: number): Promise<void> {
-  return apiCall(`/reservas/${id}`, { method: "DELETE" });
+  await apiClient.delete(`/reservas/${id}`);
 }

@@ -19,6 +19,10 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const router = useRouter()
   const [stats, setStats] = useState({ reservas: 0, aulas: 0, horarios: 0 })
 
+  console.log("Sidebar - userRoles:", userRoles)
+  console.log("Sidebar - userEmail:", userEmail)
+  console.log("Sidebar - permisos:", can)
+
   useEffect(() => {
     const loadStats = async () => {
       try {
@@ -51,12 +55,21 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   ]
 
   const formatRoleName = (role: string): string => {
-    return role.replace("ROLE_", "").split("_").join(" ")
+    if (!role || typeof role !== 'string') return 'Desconocido'
+    // Eliminar el prefijo ROLE_ si existe y formatear
+    const cleanRole = role.replace(/^ROLE_/, "")
+    // Capitalizar primera letra y convertir guiones bajos en espacios
+    return cleanRole
+      .split("_")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ")
   }
 
   const getRoleBadgeColor = (role: string): string => {
-    if (role.includes("ADMIN")) return "bg-red-100 text-red-700 border-red-200"
-    if (role.includes("PROFESOR")) return "bg-blue-100 text-blue-700 border-blue-200"
+    if (!role || typeof role !== 'string') return "bg-gray-100 text-gray-700 border-gray-200"
+    const cleanRole = role.toUpperCase().replace(/^ROLE_/, "")
+    if (cleanRole === "ADMIN") return "bg-red-100 text-red-700 border-red-200"
+    if (cleanRole === "PROFESOR") return "bg-blue-100 text-blue-700 border-blue-200"
     return "bg-gray-100 text-gray-700 border-gray-200"
   }
 
