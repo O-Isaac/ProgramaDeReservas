@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { getReservas, getAulas, getHorarios, getUsuarios } from "@/lib/api-client"
 import { usePermissions } from "@/hooks/use-permissions"
 import { Card } from "@/components/ui/card"
-import { Calendar, BookOpen, Clock, Users } from "lucide-react"
+import { Calendar, BookOpen, Clock, Users, ArrowRight } from "lucide-react"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 export default function DashboardOverview() {
@@ -19,6 +19,11 @@ export default function DashboardOverview() {
     reservasByDay: [] as any[],
   })
   const [isLoading, setIsLoading] = useState(true)
+
+  const sortedReservas = useMemo(() => {
+    if (!Array.isArray(data.reservasProximas)) return []
+    return [...data.reservasProximas].sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+  }, [data.reservasProximas])
 
   useEffect(() => {
     const loadData = async () => {
@@ -92,7 +97,19 @@ export default function DashboardOverview() {
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
 
   if (isLoading) {
-    return <div className="text-center py-8">Cargando dashboard...</div>
+    return (
+      <div className="grid gap-4 animate-pulse">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, idx) => (
+            <Card key={idx} className="p-6 bg-muted/40 border-dashed">
+              <div className="h-4 w-24 bg-muted rounded" />
+              <div className="h-8 w-16 bg-muted rounded mt-4" />
+            </Card>
+          ))}
+        </div>
+        <Card className="p-6 bg-muted/40 border-dashed h-64" />
+      </div>
+    )
   }
 
   return (
@@ -102,13 +119,16 @@ export default function DashboardOverview() {
         {stats.filter(stat => stat.visible).map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.label} className="p-6">
+            <Card key={stat.label} className="p-6 shadow-sm">
               <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                  <p className="text-3xl font-bold text-foreground mt-2">{stat.value}</p>
+                <div className="space-y-2">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{stat.label}</p>
+                  <p className="text-3xl font-bold text-foreground">{stat.value}</p>
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <ArrowRight className="w-3 h-3" /> Actualizado
+                  </span>
                 </div>
-                <div className={`${stat.color} p-3 rounded-lg`}>
+                <div className={`${stat.color} p-3 rounded-lg shadow-inner bg-opacity-40`}> 
                   <Icon className="w-6 h-6" />
                 </div>
               </div>
@@ -156,8 +176,8 @@ export default function DashboardOverview() {
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Últimas Reservas</h3>
         <div className="space-y-3">
-          {data.reservasProximas.length > 0 ? (
-            data.reservasProximas.map((reserva, idx) => (
+          {sortedReservas.length > 0 ? (
+            sortedReservas.map((reserva, idx) => (
               <div
                 key={idx}
                 className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"

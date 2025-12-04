@@ -36,14 +36,19 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-sm">
-          <div className="mb-10">
-            <h1 className="text-4xl font-semibold text-foreground mb-2">Reservant</h1>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-background" aria-hidden />
+
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-6 lg:p-12 relative z-10">
+        <div className="w-full max-w-sm space-y-8">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-medium">
+              Accede a tu panel
+            </div>
+            <h1 className="text-4xl font-semibold text-foreground">Reservant</h1>
             <p className="text-sm text-muted-foreground font-light">Gestión inteligente de reservas</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5 bg-card/70 backdrop-blur rounded-2xl border border-border/70 p-6 shadow-lg">
             {error && (
               <div className="p-4 bg-destructive/10 text-destructive rounded-lg text-sm border border-destructive/20">
                 {error}
@@ -83,17 +88,24 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-muted-foreground">
-            ¿No tienes cuenta?{" "}
-            <Link href="/auth/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
-              Registrarse
-            </Link>
+          <div className="mt-4 text-center text-xs text-muted-foreground space-y-3">
+            <p>
+              ¿No tienes cuenta?{" "}
+              <Link href="/auth/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
+                Registrarse
+              </Link>
+            </p>
+            <div className="flex items-center justify-center gap-2 text-[11px]">
+              <span className="px-2 py-1 rounded-full bg-muted text-muted-foreground">Sin instalaciones</span>
+              <span className="px-2 py-1 rounded-full bg-muted text-muted-foreground">Soporte 24/7</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-secondary to-background items-center justify-center p-12">
-        <div className="w-full h-full flex items-center justify-center text-foreground/30">
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-secondary/50 via-background to-background items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-6 rounded-3xl bg-card/50 border border-border/70 backdrop-blur-sm" />
+        <div className="w-full h-full flex items-center justify-center text-foreground/30 relative z-10">
           <DecorativeIcon />
         </div>
       </div>

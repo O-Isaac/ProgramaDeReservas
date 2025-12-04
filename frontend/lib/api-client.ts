@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
 
-const API_BASE_URL = "https://programadereservas.onrender.com";
+const API_BASE_URL = "http://localhost:8080";
 
 // Create axios instance
 const apiClient = axios.create({

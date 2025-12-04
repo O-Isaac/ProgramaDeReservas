@@ -19,10 +19,6 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const router = useRouter()
   const [stats, setStats] = useState({ reservas: 0, aulas: 0, horarios: 0 })
 
-  console.log("Sidebar - userRoles:", userRoles)
-  console.log("Sidebar - userEmail:", userEmail)
-  console.log("Sidebar - permisos:", can)
-
   useEffect(() => {
     const loadStats = async () => {
       try {
@@ -74,9 +70,9 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   }
 
   return (
-    <aside className="w-72 bg-card border-r border-border h-screen flex flex-col fixed left-0 top-0">
+    <aside className="w-72 bg-card/90 backdrop-blur-md border-r border-border/70 h-screen flex flex-col fixed left-0 top-0 shadow-sm">
       {/* Logo Section */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6 border-b border-border/70">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
             <Calendar className="w-5 h-5 text-primary" />
@@ -89,7 +85,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </div>
 
       {/* Stats Section */}
-      <div className="p-4 border-b border-border space-y-3">
+      <div className="p-4 border-b border-border/70 space-y-3 bg-gradient-to-b from-card to-transparent">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Resumen</p>
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-muted/50 rounded-lg p-3 text-center">
@@ -108,7 +104,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {tabs.filter((tab) => tab.visible).map((tab) => {
           const Icon = tab.icon
           return (
@@ -120,6 +116,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
+              aria-current={activeTab === tab.id ? "page" : undefined}
             >
               <Icon className="w-4 h-4" />
               {tab.label}
@@ -129,7 +126,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </nav>
 
       {/* User Section & Logout */}
-      <div className="p-4 border-t border-border space-y-4">
+      <div className="p-4 border-t border-border/70 space-y-4 bg-card/80 backdrop-blur">
         <div className="px-4 py-3 bg-muted/50 rounded-lg">
           <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">Usuario</p>
           <p className="text-sm font-medium text-foreground truncate mt-2">{userEmail || "Usuario"}</p>

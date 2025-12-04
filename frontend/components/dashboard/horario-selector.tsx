@@ -70,12 +70,9 @@ export default function HorarioSelector({
   }
 
   return (
-    <div>
-      <p className="text-sm font-medium mb-3">
-        Horarios disponibles para{" "}
-        {diaDeSemana.slice(0, 1).toUpperCase() +
-          diaDeSemana.slice(1).toLowerCase()}
-        :
+    <div className="space-y-3">
+      <p className="text-sm font-medium">
+        Horarios disponibles para {diaDeSemana.slice(0, 1).toUpperCase() + diaDeSemana.slice(1).toLowerCase()}:
       </p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {horarios.map((h) => {
@@ -87,32 +84,28 @@ export default function HorarioSelector({
               key={h.id}
               onClick={() => handleSelect(h.id, h)}
               disabled={isReserved}
-              className={`p-3 rounded-lg border-2 transition-all ${
+              className={`p-3 rounded-lg border-2 transition-all text-left shadow-sm ${
                 isReserved
-                  ? "border-border bg-muted/50 text-muted-foreground cursor-not-allowed opacity-50"
+                  ? "border-border bg-muted/50 text-muted-foreground cursor-not-allowed opacity-60"
                   : isSelected
-                  ? "border-primary bg-primary/10 border-2"
+                  ? "border-primary bg-primary/10"
                   : "border-border hover:border-primary hover:bg-primary/5"
               }`}
             >
-              <div className="flex items-center gap-2 justify-center">
+              <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span className="text-sm font-semibold">
-                  {h.inicio.substring(0, 5)}
-                </span>
+                <div>
+                  <span className="text-sm font-semibold block leading-none">
+                    {h.inicio.substring(0, 5)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">hasta {h.fin.substring(0, 5)}</span>
+                </div>
               </div>
-              <span className="text-xs text-muted-foreground block mt-1">
-                {h.fin.substring(0, 5)}
-              </span>
               {isReserved && (
-                <span className="text-xs font-semibold text-red-500 block mt-2">
-                  Reservado
-                </span>
+                <span className="text-xs font-semibold text-red-500 block mt-2">Reservado</span>
               )}
               {isSelected && (
-                <span className="text-xs font-semibold text-primary block mt-2">
-                  ✓ Seleccionado
-                </span>
+                <span className="text-xs font-semibold text-primary block mt-2">✓ Seleccionado</span>
               )}
             </button>
           );

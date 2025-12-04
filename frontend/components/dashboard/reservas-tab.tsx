@@ -155,15 +155,21 @@ export default function ReservasTab() {
       </div>
 
       {showForm && can.createReserva && (
-        <Card className="border-2">
+        <Card className="border border-border/70 shadow-sm">
           <CardHeader>
-            <CardTitle>Crear Nueva Reserva</CardTitle>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardTitle>Crear Nueva Reserva</CardTitle>
+                <p className="text-sm text-muted-foreground">Completa los pasos para asegurar el aula y horario.</p>
+              </div>
+              <span className="text-xs rounded-full px-2.5 py-1 bg-primary/10 text-primary font-medium">Pasos guiados</span>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <span className="flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-xs">
+                  <span className="flex items-center justify-center w-7 h-7 bg-primary text-white rounded-full text-xs shadow-sm">
                     1
                   </span>
                   {isAdmin ? "Selecciona Usuario y Aula" : "Selecciona Aula"}
@@ -231,7 +237,7 @@ export default function ReservasTab() {
               {canProceedToStep2 && (
                 <div className="space-y-3 border-t pt-6">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <span className="flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-xs">
+                    <span className="flex items-center justify-center w-7 h-7 bg-primary text-white rounded-full text-xs shadow-sm">
                       2
                     </span>
                     Selecciona Fecha
@@ -263,7 +269,7 @@ export default function ReservasTab() {
               {canProceedToStep3 && (
                 <div className="space-y-3 border-t pt-6">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <span className="flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-xs">
+                    <span className="flex items-center justify-center w-7 h-7 bg-primary text-white rounded-full text-xs shadow-sm">
                       3
                     </span>
                     Selecciona Horario
@@ -285,7 +291,7 @@ export default function ReservasTab() {
               {canProceedToStep3 && (
                 <div className="space-y-3 border-t pt-6">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <span className="flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-xs">
+                    <span className="flex items-center justify-center w-7 h-7 bg-primary text-white rounded-full text-xs shadow-sm">
                       4
                     </span>
                     Detalles de la Reserva
@@ -364,68 +370,56 @@ export default function ReservasTab() {
             Cargando reservas...
           </p>
         ) : Object.keys(reservasByAula).length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">
-            No hay reservas
-          </p>
+          <div className="border border-dashed border-border/70 rounded-lg p-8 text-center text-muted-foreground">
+            No hay reservas registradas todavía.
+          </div>
         ) : (
           aulas.map((aula) => (
-            <div key={aula.id}>
-              <h3 className="text-lg font-semibold mb-3">{aula.nombre}</h3>
-              <div className="grid grid-cols-1 gap-2">
-                {reservasByAula[aula.id] &&
-                reservasByAula[aula.id].length > 0 ? (
+            <Card key={aula.id} className="border border-border/70 shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="text-lg">{aula.nombre}</CardTitle>
+                  <p className="text-sm text-muted-foreground">Reservas recientes para este espacio</p>
+                </div>
+                <span className="text-xs px-2 py-1 bg-muted rounded-full text-muted-foreground">
+                  {reservasByAula[aula.id]?.length || 0} reserva(s)
+                </span>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {reservasByAula[aula.id] && reservasByAula[aula.id].length > 0 ? (
                   reservasByAula[aula.id].map((reserva) => (
-                    <Card
+                    <div
                       key={reserva.id}
-                      className="hover:shadow-md transition-shadow"
+                      className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3 bg-card/60 hover:border-primary/40 transition"
                     >
-                      <CardContent className="pt-6">
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <p className="font-semibold text-foreground">
-                                {reserva.motivo}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {reserva.usuario.nombre}
-                              </p>
-                            </div>
-                            {can.deleteReserva && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(reserva.id)}
-                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {parseDateToDDMMYYYY(reserva.fecha)}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {reserva.horario.inicio} - {reserva.horario.fin}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Users className="w-3 h-3" />
-                              {reserva.asistentes} pers.
-                            </div>
-                          </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="font-semibold text-foreground leading-tight">{reserva.motivo}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1"><Users className="w-3 h-3" />{reserva.usuario.nombre}</span>
+                        </p>
+                        <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1"><Calendar className="w-3 h-3" />{parseDateToDDMMYYYY(reserva.fecha)}</span>
+                          <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" />{reserva.horario.inicio} - {reserva.horario.fin}</span>
+                          <span className="inline-flex items-center gap-1"><Users className="w-3 h-3" />{reserva.asistentes} pers.</span>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                      {can.deleteReserva && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(reserva.id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground py-4 text-center">
-                    Sin reservas
-                  </p>
+                  <p className="text-sm text-muted-foreground py-4 text-center">Sin reservas</p>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))
         )}
       </div>
