@@ -95,22 +95,23 @@ export default function HorariosTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Horarios</h2>
-          <p className="text-sm text-muted-foreground mt-1">Gestiona los horarios disponibles</p>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground border border-border/70">Panel · Horarios</div>
+          <h2 className="text-2xl font-bold tracking-tight">Horarios</h2>
+          <p className="text-sm text-muted-foreground">Gestiona los horarios disponibles</p>
         </div>
         {can.createHorario && (
-          <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2 rounded-full">
             {showForm ? "Cancelar" : "+ Nuevo Horario"}
           </Button>
         )}
       </div>
 
       {showForm && can.createHorario && (
-        <Card className="border-2">
+        <Card className="border border-border/70 bg-card/70 backdrop-blur">
           <CardHeader>
-            <CardTitle>Crear Nuevo Horario</CardTitle>
+            <CardTitle className="text-lg">Crear nuevo horario</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -166,7 +167,7 @@ export default function HorariosTab() {
                 />
               </div>
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full rounded-full">
                 Crear Horario
               </Button>
             </form>
@@ -175,7 +176,7 @@ export default function HorariosTab() {
       )}
 
       {isLoading ? (
-        <p className="text-center text-muted-foreground py-8">Cargando horarios...</p>
+        <Card className="p-6 text-center text-muted-foreground bg-muted/40 border-dashed">Cargando horarios...</Card>
       ) : (
         <div className="space-y-6">
           {dias.map((dia) => (
@@ -187,7 +188,7 @@ export default function HorariosTab() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {horariosPorDia[dia] && horariosPorDia[dia].length > 0 ? (
                   horariosPorDia[dia].map((horario) => (
-                    <Card key={horario.id} className="hover:shadow-md transition-shadow">
+                    <Card key={horario.id} className="hover:shadow-md transition-shadow bg-card/80 border-border/70">
                       <CardContent className="pt-6">
                         <div className="space-y-4">
                           <div className="flex items-center justify-between">
@@ -214,7 +215,7 @@ export default function HorariosTab() {
                           </div>
 
                           {can.deleteHorario && (
-                            <Button variant="destructive" onClick={() => handleDelete(horario.id)} className="w-full">
+                            <Button variant="destructive" onClick={() => handleDelete(horario.id)} className="w-full rounded-full">
                               Eliminar
                             </Button>
                           )}
@@ -223,7 +224,7 @@ export default function HorariosTab() {
                     </Card>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground py-4">Sin horarios</p>
+                  <Card className="p-4 text-center text-muted-foreground bg-muted/30 border-dashed">Sin horarios</Card>
                 )}
               </div>
             </div>

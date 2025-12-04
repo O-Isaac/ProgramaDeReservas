@@ -74,22 +74,23 @@ export default function UsuariosTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Usuarios</h2>
-          <p className="text-sm text-muted-foreground mt-1">Gestiona los usuarios del sistema</p>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground border border-border/70">Panel · Usuarios</div>
+          <h2 className="text-2xl font-bold tracking-tight">Usuarios</h2>
+          <p className="text-sm text-muted-foreground">Gestiona los usuarios del sistema</p>
         </div>
         {can.createUsuario && (
-          <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2 rounded-full">
             {showForm ? "Cancelar" : "+ Nuevo Usuario"}
           </Button>
         )}
       </div>
 
       {showForm && can.createUsuario && (
-        <Card className="border-2">
+        <Card className="border border-border/70 bg-card/70 backdrop-blur">
           <CardHeader>
-            <CardTitle>Crear Nuevo Usuario</CardTitle>
+            <CardTitle className="text-lg">Crear nuevo usuario</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,7 +118,7 @@ export default function UsuariosTab() {
                 className="w-full px-3 py-2 border border-input rounded-md bg-background"
                 required
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full rounded-full">
                 Crear Usuario
               </Button>
             </form>
@@ -127,15 +128,15 @@ export default function UsuariosTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
-          <p className="text-center text-muted-foreground py-8">Cargando usuarios...</p>
+          <Card className="p-6 text-center text-muted-foreground bg-muted/40 border-dashed">Cargando usuarios...</Card>
         ) : usuarios.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No hay usuarios</p>
+          <Card className="p-6 text-center text-muted-foreground bg-muted/30 border-dashed">No hay usuarios</Card>
         ) : (
           usuarios.map((usuario) => (
-            <Card key={usuario.id} className="hover:shadow-md transition-shadow">
+            <Card key={usuario.id} className="hover:shadow-md transition-shadow bg-card/80 border-border/70">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{usuario.nombre}</CardTitle>
+                  <CardTitle className="text-lg leading-tight">{usuario.nombre}</CardTitle>
                   {usuario.enabled && <CheckCircle className="w-5 h-5 text-green-600" />}
                 </div>
               </CardHeader>
@@ -159,7 +160,7 @@ export default function UsuariosTab() {
                   </div>
 
                   {can.deleteUsuario && (
-                    <Button variant="destructive" onClick={() => handleDelete(usuario.id)} className="w-full">
+                    <Button variant="destructive" onClick={() => handleDelete(usuario.id)} className="w-full rounded-full">
                       Eliminar
                     </Button>
                   )}

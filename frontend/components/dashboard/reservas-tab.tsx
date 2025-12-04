@@ -140,22 +140,21 @@ export default function ReservasTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Reservas</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gestiona todas las reservas de aulas
-          </p>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground border border-border/70">Panel · Reservas</div>
+          <h2 className="text-2xl font-bold tracking-tight">Reservas</h2>
+          <p className="text-sm text-muted-foreground">Gestiona todas las reservas de aulas</p>
         </div>
         {can.createReserva && (
-          <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2 rounded-full">
             {showForm ? "Cancelar" : "+ Nueva Reserva"}
           </Button>
         )}
       </div>
 
       {showForm && can.createReserva && (
-        <Card className="border border-border/70 shadow-sm">
+        <Card className="border border-border/70 shadow-sm bg-card/75 backdrop-blur">
           <CardHeader>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -351,11 +350,11 @@ export default function ReservasTab() {
                       asistentes: 1,
                     });
                   }}
-                  className="flex-1"
+                  className="flex-1 rounded-full"
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={!canSubmit} className="flex-1">
+                <Button type="submit" disabled={!canSubmit} className="flex-1 rounded-full">
                   Crear Reserva
                 </Button>
               </div>
@@ -366,19 +365,17 @@ export default function ReservasTab() {
 
       <div className="space-y-6">
         {isLoading ? (
-          <p className="text-center text-muted-foreground py-8">
-            Cargando reservas...
-          </p>
+          <Card className="p-6 text-center text-muted-foreground bg-muted/40 border-dashed">Cargando reservas...</Card>
         ) : Object.keys(reservasByAula).length === 0 ? (
-          <div className="border border-dashed border-border/70 rounded-lg p-8 text-center text-muted-foreground">
+          <Card className="border border-dashed border-border/70 rounded-lg p-8 text-center text-muted-foreground">
             No hay reservas registradas todavía.
-          </div>
+          </Card>
         ) : (
           aulas.map((aula) => (
-            <Card key={aula.id} className="border border-border/70 shadow-sm">
+            <Card key={aula.id} className="border border-border/70 shadow-sm bg-card/80">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
-                  <CardTitle className="text-lg">{aula.nombre}</CardTitle>
+                  <CardTitle className="text-lg leading-tight">{aula.nombre}</CardTitle>
                   <p className="text-sm text-muted-foreground">Reservas recientes para este espacio</p>
                 </div>
                 <span className="text-xs px-2 py-1 bg-muted rounded-full text-muted-foreground">
@@ -416,7 +413,7 @@ export default function ReservasTab() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground py-4 text-center">Sin reservas</p>
+                  <Card className="p-4 text-center text-muted-foreground bg-muted/30 border-dashed">Sin reservas</Card>
                 )}
               </CardContent>
             </Card>

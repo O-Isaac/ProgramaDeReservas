@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/button"
 import { LogOut, Users, BookOpen, Clock, Calendar, BarChart3, Mail } from "lucide-react"
 import { getReservas, getAulas, getHorarios } from "@/lib/api-client"
 import { useQuery } from "@tanstack/react-query"
+import { cn } from "@/lib/utils"
 
 interface SidebarProps {
   activeTab: string
   onTabChange: (tab: string) => void
+  isOpen?: boolean
 }
 
-export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, isOpen = true }: SidebarProps) {
   const { logout, userEmail, userRoles } = useAuth()
   const { can } = usePermissions()
   const router = useRouter()
@@ -62,7 +64,13 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   }
 
   return (
-    <aside className="w-72 h-screen flex flex-col fixed left-0 top-0 border-r border-border/60 bg-[radial-gradient(circle_at_20%_20%,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_38%),radial-gradient(circle_at_80%_0%,color-mix(in_oklch,var(--accent)_6%,transparent),transparent_42%),var(--color-card)] backdrop-blur-lg shadow-lg shadow-primary/5">
+    <aside
+      className={cn(
+        "w-72 h-screen flex flex-col fixed left-0 top-0 border-r border-border/60 bg-[radial-gradient(circle_at_20%_20%,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_38%),radial-gradient(circle_at_80%_0%,color-mix(in_oklch,var(--accent)_6%,transparent),transparent_42%),var(--color-card)] backdrop-blur-lg shadow-lg shadow-primary/5 transition-transform duration-300 hidden lg:flex",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}
+      aria-hidden={!isOpen}
+    >
       {/* Logo Section */}
       <div className="p-6 border-b border-border/60">
         <div className="flex items-center gap-3">

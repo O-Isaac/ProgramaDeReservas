@@ -74,22 +74,23 @@ export default function AulasTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Aulas</h2>
-          <p className="text-sm text-muted-foreground mt-1">Gestiona las aulas disponibles</p>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground border border-border/70">Panel · Aulas</div>
+          <h2 className="text-2xl font-bold tracking-tight">Aulas</h2>
+          <p className="text-sm text-muted-foreground">Gestiona las aulas disponibles</p>
         </div>
         {can.createAula && (
-          <Button onClick={() => setShowForm(!showForm)} className="gap-2">
+          <Button onClick={() => setShowForm(!showForm)} className="gap-2 rounded-full">
             {showForm ? "Cancelar" : "+ Nueva Aula"}
           </Button>
         )}
       </div>
 
       {showForm && can.createAula && (
-        <Card className="border-2">
+        <Card className="border border-border/70 bg-card/70 backdrop-blur">
           <CardHeader>
-            <CardTitle>Crear Nueva Aula</CardTitle>
+            <CardTitle className="text-lg">Crear nueva aula</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,7 +120,7 @@ export default function AulasTab() {
                 />
                 <span className="text-sm font-medium">Tiene Ordenadores</span>
               </label>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full rounded-full">
                 Crear Aula
               </Button>
             </form>
@@ -129,14 +130,14 @@ export default function AulasTab() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {isLoading ? (
-          <p className="text-center text-muted-foreground py-8">Cargando aulas...</p>
+          <Card className="p-6 text-center text-muted-foreground bg-muted/40 border-dashed">Cargando aulas...</Card>
         ) : aulas.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No hay aulas</p>
+          <Card className="p-6 text-center text-muted-foreground bg-muted/30 border-dashed">No hay aulas</Card>
         ) : (
           aulas.map((aula) => (
-            <Card key={aula.id} className="hover:shadow-md transition-shadow">
+            <Card key={aula.id} className="hover:shadow-md transition-shadow bg-card/80 border-border/70">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">{aula.nombre}</CardTitle>
+                <CardTitle className="text-lg leading-tight">{aula.nombre}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -164,7 +165,7 @@ export default function AulasTab() {
                     </div>
                   </div>
                   {can.deleteAula && (
-                    <Button variant="destructive" onClick={() => handleDelete(aula.id)} className="w-full">
+                    <Button variant="destructive" onClick={() => handleDelete(aula.id)} className="w-full rounded-full">
                       Eliminar
                     </Button>
                   )}
