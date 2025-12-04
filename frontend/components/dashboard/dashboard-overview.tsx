@@ -172,31 +172,85 @@ export default function DashboardOverview() {
         </Card>
       </div>
 
-      {/* Recent Reservas */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Últimas Reservas</h3>
-        <div className="space-y-3">
-          {sortedReservas.length > 0 ? (
-            sortedReservas.map((reserva, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-4 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{reserva.motivo}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {reserva.aula?.nombre} • {reserva.horario?.inicio} • {reserva.usuario?.nombre}
+      {/* Resumen por Aula */}
+      <Card className="p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Resumen por aula</h3>
+            <p className="text-sm text-muted-foreground">Capta rápido qué aulas tienen más movimiento.</p>
+          </div>
+          <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">{data.reservasByAula.length} aulas</span>
+        </div>
+        {data.reservasByAula.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {data.reservasByAula.map((item, idx) => (
+              <div key={idx} className="border border-border/70 rounded-xl p-4 bg-card/60 hover:border-primary/30 transition shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="font-semibold text-foreground">{item.name}</p>
+                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">{item.reservas} reservas</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary"
+                    style={{ width: `${Math.min(item.reservas * 12, 100)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="border border-dashed border-border/70 rounded-lg p-6 text-center text-muted-foreground">Sin datos de aulas</div>
+        )}
+      </Card>
+
+      {/* Upcoming Reservations */}
+      <Card className="p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Próximas reservas</h3>
+            <p className="text-sm text-muted-foreground">Lo siguiente en agenda (ordenado por fecha).</p>
+          </div>
+          <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+            {sortedReservas.length} en cola
+          </span>
+        </div>
+        {sortedReservas.length > 0 ? (
+          <div className="divide-y divide-border/70">
+            {sortedReservas.slice(0, 6).map((reserva, idx) => (
+              <div key={idx} className="py-3 flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
+                  {reserva.aula?.nombre?.[0] || "A"}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium text-foreground leading-tight">{reserva.motivo}</p>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-secondary text-foreground text-[11px] font-medium">
+                      {reserva.aula?.nombre || "Aula"}
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
+                      {reserva.horario?.inicio || ""}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <span>{reserva.usuario?.nombre || reserva.usuario?.email || "Usuario"}</span>
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground/50" aria-hidden />
+                    <span>{reserva.fecha}</span>
+                    {reserva.asistentes ? (
+                      <>
+                        <span className="w-1 h-1 rounded-full bg-muted-foreground/50" aria-hidden />
+                        <span>{reserva.asistentes} asistentes</span>
+                      </>
+                    ) : null}
                   </p>
                 </div>
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                  {reserva.fecha}
-                </span>
               </div>
-            ))
-          ) : (
-            <p className="text-muted-foreground text-center py-8">No hay reservas aún</p>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="border border-dashed border-border/70 rounded-lg p-8 text-center text-muted-foreground">
+            No hay reservas programadas.
+          </div>
+        )}
       </Card>
     </div>
   )

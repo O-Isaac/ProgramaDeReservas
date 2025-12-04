@@ -26,10 +26,6 @@ export default function DashboardPage() {
     }
   }, [token, isLoading, router])
 
-  if (isLoading || !token) {
-    return <div className="flex items-center justify-center min-h-screen">Cargando...</div>
-  }
-
   const quickActions = useMemo(
     () => [
       { id: "reservas", label: "Nueva reserva", icon: CalendarPlus, visible: can.createReserva },
@@ -39,36 +35,46 @@ export default function DashboardPage() {
     [can.createReserva, can.viewUsuarios],
   )
 
+  if (isLoading || !token) {
+    return <div className="flex items-center justify-center min-h-screen">Cargando...</div>
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="flex-1 ml-72 overflow-auto">
-        <div className="sticky top-0 z-30 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 border-b border-border/80">
-          <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Panel principal</p>
-              <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+        <div className="sticky top-0 z-30 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 border-b border-border/60 bg-[radial-gradient(circle_at_20%_20%,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_45%),radial-gradient(circle_at_80%_0%,color-mix(in_oklch,var(--accent)_8%,transparent),transparent_38%)]">
+          <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-muted/70 text-muted-foreground px-3 py-1 text-[11px] font-medium border border-border/60">
+                <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden />
+                Panel principal / {activeTab === "dashboard" ? "Resumen" : activeTab}
+              </div>
+              <h1 className="text-3xl font-semibold text-foreground tracking-tight flex items-center gap-2">
                 {user?.nombre || "Bienvenido"}
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                   {activeTab === "dashboard" ? "Resumen" : activeTab}
                 </span>
               </h1>
-              <p className="text-sm text-muted-foreground max-w-xl">
-                Gestiona reservas, aulas y horarios con atajos rápidos y métricas a la vista.
+              <p className="text-sm text-muted-foreground max-w-2xl">
+                Gestiona reservas, aulas y horarios con accesos rápidos y visuales claros.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
               {quickActions.filter((qa) => qa.visible).map((qa) => {
                 const Icon = qa.icon
+                const isActive = activeTab === qa.id
                 return (
                   <button
                     key={qa.id}
                     onClick={() => setActiveTab(qa.id as Tab)}
-                    className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition shadow-sm hover:-translate-y-[1px] hover:shadow-md ${
-                      activeTab === qa.id ? "bg-primary text-primary-foreground border-primary" : "bg-card/70 hover:bg-card"
+                    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition shadow-sm border ${
+                      isActive
+                        ? "bg-primary text-primary-foreground border-primary shadow"
+                        : "bg-card/80 text-foreground border-border hover:border-primary/60 hover:-translate-y-[1px]"
                     }`}
-                    aria-current={activeTab === qa.id ? "page" : undefined}
+                    aria-current={isActive ? "page" : undefined}
                   >
                     <Icon className="w-4 h-4" />
                     {qa.label}

@@ -4,7 +4,7 @@ import { useAuth } from "@/context/auth-context"
 import { usePermissions } from "@/hooks/use-permissions"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { LogOut, Users, BookOpen, Clock, Calendar, BarChart3 } from "lucide-react"
+import { LogOut, Users, BookOpen, Clock, Calendar, BarChart3, Mail } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getReservas, getAulas, getHorarios } from "@/lib/api-client"
 
@@ -69,12 +69,14 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     return "bg-gray-100 text-gray-700 border-gray-200"
   }
 
+  const primaryRole = userRoles && userRoles.length > 0 ? userRoles[0] : null
+
   return (
-    <aside className="w-72 bg-card/90 backdrop-blur-md border-r border-border/70 h-screen flex flex-col fixed left-0 top-0 shadow-sm">
+    <aside className="w-72 h-screen flex flex-col fixed left-0 top-0 border-r border-border/60 bg-[radial-gradient(circle_at_20%_20%,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_38%),radial-gradient(circle_at_80%_0%,color-mix(in_oklch,var(--accent)_6%,transparent),transparent_42%),var(--color-card)] backdrop-blur-lg shadow-lg shadow-primary/5">
       {/* Logo Section */}
-      <div className="p-6 border-b border-border/70">
+      <div className="p-6 border-b border-border/60">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
             <Calendar className="w-5 h-5 text-primary" />
           </div>
           <div>
@@ -85,38 +87,33 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </div>
 
       {/* Stats Section */}
-      <div className="p-4 border-b border-border/70 space-y-3 bg-gradient-to-b from-card to-transparent">
+      <div className="p-4 border-b border-border/60 space-y-3 bg-gradient-to-b from-card/80 to-transparent">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Resumen</p>
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-muted/50 rounded-lg p-3 text-center">
-            <p className="text-lg font-bold text-foreground">{stats.reservas}</p>
-            <p className="text-xs text-muted-foreground mt-1">Reservas</p>
-          </div>
-          <div className="bg-muted/50 rounded-lg p-3 text-center">
-            <p className="text-lg font-bold text-foreground">{stats.aulas}</p>
-            <p className="text-xs text-muted-foreground mt-1">Aulas</p>
-          </div>
-          <div className="bg-muted/50 rounded-lg p-3 text-center">
-            <p className="text-lg font-bold text-foreground">{stats.horarios}</p>
-            <p className="text-xs text-muted-foreground mt-1">Horarios</p>
-          </div>
+          {[{ label: "Reservas", value: stats.reservas }, { label: "Aulas", value: stats.aulas }, { label: "Horarios", value: stats.horarios }].map((item) => (
+            <div key={item.label} className="rounded-xl p-3 text-center border border-border/60 bg-card/70 shadow-sm">
+              <p className="text-lg font-bold text-foreground leading-none">{item.value}</p>
+              <p className="text-[11px] text-muted-foreground mt-1 uppercase tracking-wide">{item.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {tabs.filter((tab) => tab.visible).map((tab) => {
           const Icon = tab.icon
+          const isActive = activeTab === tab.id
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`w-full text-left px-4 py-3 rounded-lg font-medium transition flex items-center gap-3 ${
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              className={`w-full text-left px-4 py-3 rounded-xl font-medium transition flex items-center gap-3 border border-transparent ${
+                isActive
+                  ? "bg-primary/15 text-foreground border-primary/40 shadow-sm ring-1 ring-primary/20"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground hover:border-border"
               }`}
-              aria-current={activeTab === tab.id ? "page" : undefined}
+              aria-current={isActive ? "page" : undefined}
             >
               <Icon className="w-4 h-4" />
               {tab.label}
@@ -126,35 +123,31 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </nav>
 
       {/* User Section & Logout */}
-      <div className="p-4 border-t border-border/70 space-y-4 bg-card/80 backdrop-blur">
-        <div className="px-4 py-3 bg-muted/50 rounded-lg">
-          <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">Usuario</p>
-          <p className="text-sm font-medium text-foreground truncate mt-2">{userEmail || "Usuario"}</p>
-
-          {userRoles && userRoles.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {userRoles.map((role) => (
-                <span
-                  key={role}
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeColor(
-                    role,
-                  )}`}
-                >
-                  {formatRoleName(role)}
-                </span>
-              ))}
+        <div className="p-4 border-t border-border/60 space-y-3 bg-card/85 backdrop-blur">
+          <div className="px-4 py-3 bg-muted/30 rounded-xl space-y-2 border border-border/50">
+            <div className="flex items-center gap-2 text-sm text-foreground truncate">
+              <Mail className="w-4 h-4 text-muted-foreground" />
+              <span className="font-medium truncate">{userEmail || "Sin correo"}</span>
             </div>
-          )}
+
+            {primaryRole && (
+              <span
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border ${getRoleBadgeColor(primaryRole)} bg-primary/10 text-primary`}
+              >
+                {formatRoleName(primaryRole)}
+              </span>
+            )}
+          </div>
+
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="w-full justify-start gap-2 bg-transparent hover:bg-muted"
+          >
+            <LogOut className="w-4 h-4" />
+            Cerrar Sesión
+          </Button>
         </div>
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          className="w-full justify-start gap-2 bg-transparent hover:bg-muted"
-        >
-          <LogOut className="w-4 h-4" />
-          Cerrar Sesión
-        </Button>
-      </div>
     </aside>
   )
 }
