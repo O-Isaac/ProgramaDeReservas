@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { getReservas, getAulas, getHorarios, getUsuarios } from "@/lib/api-client"
 import { usePermissions } from "@/hooks/use-permissions"
 import { Card } from "@/components/ui/card"
@@ -9,83 +10,61 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 export default function DashboardOverview() {
   const { can } = usePermissions()
-  const [data, setData] = useState({
-    totalReservas: 0,
-    totalAulas: 0,
-    totalHorarios: 0,
-    totalUsuarios: 0,
-    reservasProximas: [] as any[],
-    reservasByAula: [] as any[],
-    reservasByDay: [] as any[],
+  const reservasQuery = useQuery({ queryKey: ["reservas"], queryFn: getReservas })
+  const aulasQuery = useQuery({ queryKey: ["aulas"], queryFn: getAulas })
+  const horariosQuery = useQuery({ queryKey: ["horarios"], queryFn: getHorarios })
+  const usuariosQuery = useQuery({
+    queryKey: ["usuarios"],
+    queryFn: getUsuarios,
+    enabled: can.viewUsuarios,
   })
-  const [isLoading, setIsLoading] = useState(true)
+
+  const isLoading = reservasQuery.isPending || aulasQuery.isPending || horariosQuery.isPending || usuariosQuery.isPending
+
+  const data = useMemo(() => {
+    const reservas = Array.isArray(reservasQuery.data) ? reservasQuery.data : []
+    const aulas = Array.isArray(aulasQuery.data) ? aulasQuery.data : []
+    const horarios = Array.isArray(horariosQuery.data) ? horariosQuery.data : []
+    const usuarios = can.viewUsuarios && Array.isArray(usuariosQuery.data) ? usuariosQuery.data : []
+
+    const reservasByAulaData = aulas.map((aula: any) => ({
+      name: aula.nombre,
+      reservas: reservas.filter((r: any) => r.aula?.id === aula.id).length,
+    }))
+
+    const reservasByDayData = [
+      { day: "Lun", count: 0 },
+      { day: "Mar", count: 0 },
+      { day: "Mié", count: 0 },
+      { day: "Jue", count: 0 },
+      { day: "Vie", count: 0 },
+      { day: "Sáb", count: 0 },
+      { day: "Dom", count: 0 },
+    ]
+
+    reservas.forEach((r: any) => {
+      const date = new Date(r.fecha)
+      const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1
+      if (dayIndex >= 0) reservasByDayData[dayIndex].count++
+    })
+
+    const reservasProximas = reservas.slice(0, 5)
+
+    return {
+      totalReservas: reservas.length,
+      totalAulas: aulas.length,
+      totalHorarios: horarios.length,
+      totalUsuarios: usuarios.length,
+      reservasProximas,
+      reservasByAula: reservasByAulaData,
+      reservasByDay: reservasByDayData,
+    }
+  }, [reservasQuery.data, aulasQuery.data, horariosQuery.data, usuariosQuery.data, can.viewUsuarios])
 
   const sortedReservas = useMemo(() => {
     if (!Array.isArray(data.reservasProximas)) return []
     return [...data.reservasProximas].sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
   }, [data.reservasProximas])
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Cargar datos según permisos
-        const promises: Promise<any>[] = [
-          getReservas(),
-          getAulas(),
-          getHorarios(),
-        ]
-
-        // Solo cargar usuarios si tiene permiso
-        if (can.viewUsuarios) {
-          promises.push(getUsuarios())
-        }
-
-        const results = await Promise.all(promises)
-        const [reservas, aulas, horarios, usuarios] = results
-
-        const reservasByAulaData = aulas.map((aula: any) => ({
-          name: aula.nombre,
-          reservas: (Array.isArray(reservas) ? reservas : []).filter((r: any) => r.aula?.id === aula.id).length,
-        }))
-
-        const reservasByDayData = [
-          { day: "Lun", count: 0 },
-          { day: "Mar", count: 0 },
-          { day: "Mié", count: 0 },
-          { day: "Jue", count: 0 },
-          { day: "Vie", count: 0 },
-          { day: "Sáb", count: 0 },
-          { day: "Dom", count: 0 },
-        ]
-
-        if (Array.isArray(reservas)) {
-          reservas.forEach((r: any) => {
-            const date = new Date(r.fecha)
-            const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1
-            if (dayIndex >= 0) reservasByDayData[dayIndex].count++
-          })
-        }
-
-        const reservasProximas = (Array.isArray(reservas) ? reservas : []).slice(0, 5)
-
-        setData({
-          totalReservas: Array.isArray(reservas) ? reservas.length : 0,
-          totalAulas: Array.isArray(aulas) ? aulas.length : 0,
-          totalHorarios: Array.isArray(horarios) ? horarios.length : 0,
-          totalUsuarios: can.viewUsuarios && Array.isArray(usuarios) ? usuarios.length : 0,
-          reservasProximas,
-          reservasByAula: reservasByAulaData,
-          reservasByDay: reservasByDayData,
-        })
-      } catch (err) {
-        console.error("Error loading dashboard data:", err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadData()
-  }, [can.viewUsuarios])
 
   const stats = [
     { label: "Reservas Totales", value: data.totalReservas, icon: Calendar, color: "bg-blue-100 text-blue-600", visible: true },

@@ -5,8 +5,8 @@ import { usePermissions } from "@/hooks/use-permissions"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { LogOut, Users, BookOpen, Clock, Calendar, BarChart3, Mail } from "lucide-react"
-import { useEffect, useState } from "react"
 import { getReservas, getAulas, getHorarios } from "@/lib/api-client"
+import { useQuery } from "@tanstack/react-query"
 
 interface SidebarProps {
   activeTab: string
@@ -17,25 +17,9 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const { logout, userEmail, userRoles } = useAuth()
   const { can } = usePermissions()
   const router = useRouter()
-  const [stats, setStats] = useState({ reservas: 0, aulas: 0, horarios: 0 })
-
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const promises: Promise<any>[] = [getReservas(), getAulas(), getHorarios()]
-
-        const [reservas, aulas, horarios] = await Promise.all(promises)
-        setStats({
-          reservas: Array.isArray(reservas) ? reservas.length : 0,
-          aulas: Array.isArray(aulas) ? aulas.length : 0,
-          horarios: Array.isArray(horarios) ? horarios.length : 0,
-        })
-      } catch (err) {
-        console.log("[v0] Error loading stats")
-      }
-    }
-    loadStats()
-  }, [])
+  const reservasQuery = useQuery({ queryKey: ["reservas"], queryFn: getReservas })
+  const aulasQuery = useQuery({ queryKey: ["aulas"], queryFn: getAulas })
+  const horariosQuery = useQuery({ queryKey: ["horarios"], queryFn: getHorarios })
 
   const handleLogout = () => {
     logout()
@@ -70,6 +54,12 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   }
 
   const primaryRole = userRoles && userRoles.length > 0 ? userRoles[0] : null
+
+  const stats = {
+    reservas: Array.isArray(reservasQuery.data) ? reservasQuery.data.length : 0,
+    aulas: Array.isArray(aulasQuery.data) ? aulasQuery.data.length : 0,
+    horarios: Array.isArray(horariosQuery.data) ? horariosQuery.data.length : 0,
+  }
 
   return (
     <aside className="w-72 h-screen flex flex-col fixed left-0 top-0 border-r border-border/60 bg-[radial-gradient(circle_at_20%_20%,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_38%),radial-gradient(circle_at_80%_0%,color-mix(in_oklch,var(--accent)_6%,transparent),transparent_42%),var(--color-card)] backdrop-blur-lg shadow-lg shadow-primary/5">
