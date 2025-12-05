@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 
-const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://programadereservas.onrender.com";
 const API_BASE_STORAGE_KEY = "api_base_url";
 let apiBaseUrl = DEFAULT_API_BASE_URL;
 
