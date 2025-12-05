@@ -1,5 +1,6 @@
 package io.github.isaac.reservas.services.auth;
 
+import io.github.isaac.reservas.entities.Usuario;
 import io.jsonwebtoken.Jwts;
 import lombok.Data;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,9 @@ public class JWTService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        Long userId = usuario.getId();
+
         // Construir el token JWT
         return Jwts.builder()
                 .subject(authentication.getName())                             // Email del usuario
@@ -34,6 +38,7 @@ public class JWTService {
                 .issuedAt(new Date())                                          // Cuándo se creó
                 .expiration(new Date(System.currentTimeMillis() + 86400000))   // Expira en 24h
                 .claim("roles", roles)                                      // Roles del usuario
+                .claim("userId", userId)
                 .signWith(secretKey)                                           // Firmar con clave secreta
                 .compact();                                                    // Generar String del token
     }
