@@ -19,7 +19,10 @@ export default function DashboardOverview() {
     enabled: can.viewUsuarios,
   })
 
-  const isLoading = reservasQuery.isPending || aulasQuery.isPending || horariosQuery.isPending || usuariosQuery.isPending
+  const usuariosIsLoading = can.viewUsuarios ? usuariosQuery.isPending : false
+  const isLoading = reservasQuery.isPending || aulasQuery.isPending || horariosQuery.isPending || usuariosIsLoading
+
+  console.log({ reservasQuery, aulasQuery, horariosQuery, usuariosQuery })
 
   const data = useMemo(() => {
     const reservas = Array.isArray(reservasQuery.data) ? reservasQuery.data : []

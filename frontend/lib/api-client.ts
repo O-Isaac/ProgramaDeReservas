@@ -1,11 +1,26 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 
-const API_BASE_URL = "https://programadereservas.onrender.com";
+const DEFAULT_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+const API_BASE_STORAGE_KEY = "api_base_url";
+let apiBaseUrl = DEFAULT_API_BASE_URL;
+
+const sanitizeBaseUrl = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) return DEFAULT_API_BASE_URL;
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `http://${trimmed}`;
+  try {
+    const normalized = new URL(withProtocol);
+    normalized.pathname = normalized.pathname.replace(/\/+$/, "");
+    return normalized.toString().replace(/\/+$/, "");
+  } catch (error) {
+    throw new Error("URL del endpoint inválida");
+  }
+};
 
 // Create axios instance
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: apiBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },
@@ -76,11 +91,53 @@ export const removeToken = (): void => {
 
 // Auth endpoints - NO JWT required (usando axios sin interceptor)
 const authClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: apiBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+const applyBaseUrl = (value: string) => {
+  apiBaseUrl = value;
+  apiClient.defaults.baseURL = value;
+  authClient.defaults.baseURL = value;
+};
+
+const hydrateBaseUrlFromStorage = () => {
+  if (typeof window === "undefined") return;
+  const stored = localStorage.getItem(API_BASE_STORAGE_KEY);
+  if (stored) {
+    try {
+      applyBaseUrl(sanitizeBaseUrl(stored));
+    } catch (error) {
+      localStorage.removeItem(API_BASE_STORAGE_KEY);
+      applyBaseUrl(DEFAULT_API_BASE_URL);
+    }
+  }
+};
+
+if (typeof window !== "undefined") {
+  hydrateBaseUrlFromStorage();
+}
+
+export const getApiBaseUrl = () => apiBaseUrl;
+
+export const updateApiBaseUrl = (value: string) => {
+  const sanitized = sanitizeBaseUrl(value);
+  applyBaseUrl(sanitized);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(API_BASE_STORAGE_KEY, sanitized);
+  }
+  return sanitized;
+};
+
+export const resetApiBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(API_BASE_STORAGE_KEY);
+  }
+  applyBaseUrl(DEFAULT_API_BASE_URL);
+  return DEFAULT_API_BASE_URL;
+};
 
 // Add error handling to auth client too
 authClient.interceptors.response.use(
@@ -140,6 +197,7 @@ export async function changePassword(
 // Usuarios endpoints
 export async function getUsuarios(): Promise<any[]> {
   const { data } = await apiClient.get("/usuarios");
+  console.log(data);
   return data;
 }
 

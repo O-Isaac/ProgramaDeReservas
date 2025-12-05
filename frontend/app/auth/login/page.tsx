@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { login } from "@/lib/api-client"
+import { login, getApiBaseUrl } from "@/lib/api-client"
 import { useAuth } from "@/context/auth-context"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const currentEndpoint = getApiBaseUrl()
   const { login: authLogin } = useAuth()
   const router = useRouter()
 
@@ -33,6 +34,7 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
+
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -87,6 +89,19 @@ export default function LoginPage() {
               {isLoading ? "Iniciando..." : "Iniciar Sesión"}
             </Button>
           </form>
+
+          <div className="bg-card/70 backdrop-blur rounded-2xl border border-dashed border-border/70 p-6 space-y-4 shadow-inner">
+            <div className="flex flex-col gap-1">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Endpoint activo</p>
+              <p className="font-mono text-sm text-foreground break-all">{currentEndpoint}</p>
+            </div>
+            <Button variant="outline" className="w-full" asChild>
+              <Link href="/auth/endpoint">Configurar endpoint</Link>
+            </Button>
+            <p className="text-[11px] text-muted-foreground">
+              Si necesitas apuntar a otro backend, toca el botón para abrir la consola avanzada y actualizar el endpoint.
+            </p>
+          </div>
 
           <div className="mt-4 text-center text-xs text-muted-foreground space-y-3">
             <p>

@@ -1,10 +1,11 @@
 "use client"
 
+import { useMemo } from "react"
 import { useAuth } from "@/context/auth-context"
 import { usePermissions } from "@/hooks/use-permissions"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { LogOut, Users, BookOpen, Clock, Calendar, BarChart3, Mail } from "lucide-react"
+import { LogOut, Users, BookOpen, Clock, Calendar, BarChart3, UserRound } from "lucide-react"
 import { getReservas, getAulas, getHorarios } from "@/lib/api-client"
 import { useQuery } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
@@ -16,7 +17,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeTab, onTabChange, isOpen = true }: SidebarProps) {
-  const { logout, userEmail, userRoles } = useAuth()
+  const { logout, userEmail, userRoles, user } = useAuth()
   const { can } = usePermissions()
   const router = useRouter()
   const reservasQuery = useQuery({ queryKey: ["reservas"], queryFn: getReservas })
@@ -28,6 +29,10 @@ export default function Sidebar({ activeTab, onTabChange, isOpen = true }: Sideb
     router.push("/auth/login")
   }
 
+  const handleGoToProfile = () => {
+    router.push("/profile")
+  }
+
   const tabs = [
     { id: "dashboard", label: "Panel", icon: BarChart3, visible: true },
     { id: "usuarios", label: "Usuarios", icon: Users, visible: can.viewUsuarios },
@@ -37,25 +42,34 @@ export default function Sidebar({ activeTab, onTabChange, isOpen = true }: Sideb
   ]
 
   const formatRoleName = (role: string): string => {
-    if (!role || typeof role !== 'string') return 'Desconocido'
-    // Eliminar el prefijo ROLE_ si existe y formatear
+    if (!role || typeof role !== "string") return "Desconocido"
     const cleanRole = role.replace(/^ROLE_/, "")
-    // Capitalizar primera letra y convertir guiones bajos en espacios
     return cleanRole
       .split("_")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ")
   }
 
+  const primaryRole = userRoles && userRoles.length > 0 ? userRoles[0] : null
+
   const getRoleBadgeColor = (role: string): string => {
-    if (!role || typeof role !== 'string') return "bg-gray-100 text-gray-700 border-gray-200"
+    if (!role || typeof role !== "string") return "bg-muted text-muted-foreground border-border/60"
     const cleanRole = role.toUpperCase().replace(/^ROLE_/, "")
     if (cleanRole === "ADMIN") return "bg-red-100 text-red-700 border-red-200"
     if (cleanRole === "PROFESOR") return "bg-blue-100 text-blue-700 border-blue-200"
-    return "bg-gray-100 text-gray-700 border-gray-200"
+    if (cleanRole === "GESTOR") return "bg-amber-100 text-amber-700 border-amber-200"
+    return "bg-muted text-muted-foreground border-border/60"
   }
 
-  const primaryRole = userRoles && userRoles.length > 0 ? userRoles[0] : null
+  const initials = useMemo(() => {
+    const source = user?.nombre || userEmail || "?"
+    return source
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((segment) => segment[0]?.toUpperCase())
+      .join("") || "?"
+  }, [user?.nombre, userEmail])
 
   const stats = {
     reservas: Array.isArray(reservasQuery.data) ? reservasQuery.data.length : 0,
@@ -63,89 +77,101 @@ export default function Sidebar({ activeTab, onTabChange, isOpen = true }: Sideb
     horarios: Array.isArray(horariosQuery.data) ? horariosQuery.data.length : 0,
   }
 
+  const quickStats = [
+    { label: "Reservas", value: stats.reservas },
+    { label: "Aulas", value: stats.aulas },
+    { label: "Horarios", value: stats.horarios },
+  ]
+
   return (
     <aside
       className={cn(
-        "w-72 h-screen flex flex-col fixed left-0 top-0 border-r border-border/60 bg-[radial-gradient(circle_at_20%_20%,color-mix(in_oklch,var(--primary)_8%,transparent),transparent_38%),radial-gradient(circle_at_80%_0%,color-mix(in_oklch,var(--accent)_6%,transparent),transparent_42%),var(--color-card)] backdrop-blur-lg shadow-lg shadow-primary/5 transition-transform duration-300 hidden lg:flex",
+        "hidden lg:flex fixed left-0 top-0 h-screen w-72 flex-col border-r border-border/40 bg-card/90 ring-1 ring-white/10 backdrop-blur-lg transition-transform duration-300",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}
       aria-hidden={!isOpen}
     >
-      {/* Logo Section */}
-      <div className="p-6 border-b border-border/60">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
-            <Calendar className="w-5 h-5 text-primary" />
+      <div className="flex h-full flex-col">
+        <div className="px-6 py-8 space-y-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border/70 bg-card">
+                <Calendar className="h-5 w-5 text-foreground" />
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.5em] text-muted-foreground">Reservant</p>
+                <h1 className="text-xl font-semibold text-foreground">Panel</h1>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Gestión diaria de aulas y reservas.</p>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Reservant</h1>
-            <p className="text-xs text-muted-foreground">Gestión de Reservas</p>
+          <div className="space-y-2">
+            {quickStats.map((item) => (
+              <div key={item.label} className="flex items-center justify-between rounded-xl border border-border/60 px-3 py-2 bg-card/80">
+                <span className="text-xs text-muted-foreground">{item.label}</span>
+                <span className="text-lg font-semibold text-foreground">{item.value}</span>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* Stats Section */}
-      <div className="p-4 border-b border-border/60 space-y-3 bg-gradient-to-b from-card/80 to-transparent">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Resumen</p>
-        <div className="grid grid-cols-3 gap-2">
-          {[{ label: "Reservas", value: stats.reservas }, { label: "Aulas", value: stats.aulas }, { label: "Horarios", value: stats.horarios }].map((item) => (
-            <div key={item.label} className="rounded-xl p-3 text-center border border-border/60 bg-card/70 shadow-sm">
-              <p className="text-lg font-bold text-foreground leading-none">{item.value}</p>
-              <p className="text-[11px] text-muted-foreground mt-1 uppercase tracking-wide">{item.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {tabs.filter((tab) => tab.visible).map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={`w-full text-left px-4 py-3 rounded-xl font-medium transition flex items-center gap-3 border border-transparent ${
-                isActive
-                  ? "bg-primary/15 text-foreground border-primary/40 shadow-sm ring-1 ring-primary/20"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground hover:border-border"
-              }`}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          )
-        })}
-      </nav>
-
-      {/* User Section & Logout */}
-        <div className="p-4 border-t border-border/60 space-y-3 bg-card/85 backdrop-blur">
-          <div className="px-4 py-3 bg-muted/30 rounded-xl space-y-2 border border-border/50">
-            <div className="flex items-center gap-2 text-sm text-foreground truncate">
-              <Mail className="w-4 h-4 text-muted-foreground" />
-              <span className="font-medium truncate">{userEmail || "Sin correo"}</span>
-            </div>
-
-            {primaryRole && (
-              <span
-                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border ${getRoleBadgeColor(primaryRole)} bg-primary/10 text-primary`}
+        <nav className="flex-1 px-4 space-y-2">
+          {tabs.filter((tab) => tab.visible).map((tab) => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition",
+                  isActive ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+                aria-current={isActive ? "page" : undefined}
               >
-                {formatRoleName(primaryRole)}
-              </span>
-            )}
-          </div>
+                <Icon className={cn("h-4 w-4", isActive ? "text-background" : "text-muted-foreground")} />
+                <span>{tab.label}</span>
+              </button>
+            )
+          })}
+        </nav>
 
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="w-full justify-start gap-2 bg-transparent hover:bg-muted"
-          >
-            <LogOut className="w-4 h-4" />
-            Cerrar Sesión
-          </Button>
+        <div className="px-5 py-6 space-y-5 border-t border-border/60">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-sm font-semibold text-foreground">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{user?.nombre || userEmail || "Sin nombre"}</p>
+              <p className="text-xs text-muted-foreground truncate">{userEmail || "Sin correo"}</p>
+            </div>
+          </div>
+          {primaryRole && (
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.25em]",
+                getRoleBadgeColor(primaryRole)
+              )}
+            >
+              {formatRoleName(primaryRole)}
+            </span>
+          )}
+          <div className="flex flex-col gap-2">
+            <Button variant="secondary" className="w-full justify-center gap-2" onClick={handleGoToProfile}>
+              <UserRound className="h-4 w-4" />
+              Abrir perfil
+            </Button>
+            <Button
+              onClick={handleLogout}
+              variant="ghost"
+              className="w-full justify-center gap-2 text-muted-foreground hover:text-destructive"
+            >
+              <LogOut className="w-4 h-4" />
+              Cerrar sesión
+            </Button>
+          </div>
         </div>
+      </div>
     </aside>
   )
 }
