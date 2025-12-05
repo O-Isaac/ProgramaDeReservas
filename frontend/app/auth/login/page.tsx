@@ -5,7 +5,7 @@ import type React from "react"
 import { login, getApiBaseUrl } from "@/lib/api-client"
 import { useAuth } from "@/context/auth-context"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { DecorativeIcon } from "@/components/decorative-icon"
@@ -15,9 +15,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const currentEndpoint = getApiBaseUrl()
+  const [currentEndpoint, setCurrentEndpoint] = useState<string | null>(null)
   const { login: authLogin } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    setCurrentEndpoint(getApiBaseUrl())
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,7 +97,7 @@ export default function LoginPage() {
           <div className="bg-card/70 backdrop-blur rounded-2xl border border-dashed border-border/70 p-6 space-y-4 shadow-inner">
             <div className="flex flex-col gap-1">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Endpoint activo</p>
-              <p className="font-mono text-sm text-foreground break-all">{currentEndpoint}</p>
+              <p className="font-mono text-sm text-foreground break-all">{currentEndpoint ?? "Cargando endpoint..."}</p>
             </div>
             <Button variant="outline" className="w-full" asChild>
               <Link href="/auth/endpoint">Configurar endpoint</Link>

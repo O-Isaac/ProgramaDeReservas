@@ -8,7 +8,9 @@ import {
   deleteReserva,
   getUsuarios,
   getAulas,
+  getToken,
 } from "@/lib/api-client";
+import { getUserIdFromToken } from "@/lib/auth-utils";
 import { useAuth } from "@/context/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
@@ -38,13 +40,14 @@ interface Aula {
 }
 
 export default function ReservasTab() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { can, isAdmin } = usePermissions();
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [aulas, setAulas] = useState<Aula[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     usuarioId: "",
@@ -82,20 +85,21 @@ export default function ReservasTab() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true);
     try {
       const apiDate = convertToApiDate(formData.fecha);
-      // Usar el ID del usuario logueado, o el seleccionado si es admin
-      const usuarioId = isAdmin && formData.usuarioId 
-        ? Number.parseInt(formData.usuarioId) 
-        : user?.id || 0;
-      
-      if (!usuarioId) {
-        console.error("No se pudo obtener el ID del usuario");
+      const fallbackToken = token || getToken();
+      const resolvedUserId = isAdmin && formData.usuarioId
+        ? Number.parseInt(formData.usuarioId)
+        : user?.id ?? (fallbackToken ? getUserIdFromToken(fallbackToken) : null);
+
+      if (!resolvedUserId) {
+        console.error("No se pudo obtener el ID del usuario autenticado");
         return;
       }
 
       await createReserva({
-        usuarioId: usuarioId,
+        usuarioId: resolvedUserId,
         aulaId: Number.parseInt(formData.aulaId),
         horarioId: Number.parseInt(formData.horarioId),
         fecha: apiDate,
@@ -114,6 +118,8 @@ export default function ReservasTab() {
       fetchData();
     } catch (err) {
       console.error("Error creating reserva:", err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -354,8 +360,8 @@ export default function ReservasTab() {
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={!canSubmit} className="flex-1 rounded-full">
-                  Crear Reserva
+                <Button type="submit" disabled={!canSubmit || isSaving} className="flex-1 rounded-full">
+                  {isSaving ? "Creando..." : "Crear Reserva"}
                 </Button>
               </div>
             </form>

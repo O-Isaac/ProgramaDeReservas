@@ -82,6 +82,7 @@ export default function HorarioSelector({
           return (
             <button
               key={h.id}
+              type="button"
               onClick={() => handleSelect(h.id, h)}
               disabled={isReserved}
               className={`p-3 rounded-lg border-2 transition-all text-left shadow-sm ${
