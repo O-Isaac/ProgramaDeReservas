@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import io.github.isaac.reservas.entities.Usuario;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
